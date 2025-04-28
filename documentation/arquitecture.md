@@ -1,6 +1,6 @@
 # 📋 Arquitetura do Projeto — Projeto "O Que é Amor"
 
-
+```bash
 /oqueeamor-website
 │
 ├── public/                     # Arquivos públicos (imagens, ícones, manifest, etc.)
@@ -92,7 +92,7 @@
 ├── package.json                # Dependências do projeto
 ├── tailwind.config.js          # (Se usar Tailwind além do Material UI opcionalmente)
 └── README.md                   # Documentação inicial
-
+```
 
 🛠️ Detalhes de Organização:
 
