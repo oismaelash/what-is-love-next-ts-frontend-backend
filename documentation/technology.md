@@ -11,4 +11,4 @@
 | Framework         | Next.js          | Framework React para desenvolvimento front-end e back-end. |
 | Biblioteca de UI  | Material UI      | Biblioteca de componentes para UI/UX. |
 | Moderação         | OpenAI           | API para validação de conteúdo e moderação de definições sobre amor. |
-
+| Containerização   | Docker           | Plataforma para automação de implantação de aplicações em contêineres. |
