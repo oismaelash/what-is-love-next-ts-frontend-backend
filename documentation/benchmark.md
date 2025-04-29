@@ -6,7 +6,7 @@
 |:--------|:---------------|:-----|
 | **NGL.link** (perguntas anônimas) | Experiência de escrever/receber mensagens de forma simples e emocional. Mobile first. | [NGL](https://ngl.link/) |
 | **Thoughts.page** (página de pensamentos) | Layout minimalista, simples para o usuário apenas expressar algo. | [Thoughts.page](https://thoughts.page/) |
-| **Afterglow** (mensagens anônimas) | Cores suaves + boa animação de envio e leitura de mensagens. | [Afterglow](https://afterglow.so/) |
+| **Afterglow** (mensagens anônimas) | Cores suaves + boa animação de envio e leitura de mensagens. |
 
 ---
 
@@ -14,8 +14,8 @@
 
 | Projeto | O que observar | Link |
 |:--------|:---------------|:-----|
-| **Cove.fm** (app para desabafar) | Experiência emocional, ícones sutis, foco na sensação de "ser ouvido". | [Cove.fm](https://cove.fm/) |
-| **Gratitude App** (gratidão diária) | Como deixam simples a ação de escrever uma pequena frase todo dia. | [Gratitude App](https://gratefulness.me/gratitude-app/) |
+| **Cove.fm** (app para desabafar) | Experiência emocional, ícones sutis, foco na sensação de "ser ouvido". |
+| **Gratitude App** (gratidão diária) | Como deixam simples a ação de escrever uma pequena frase todo dia. |
 | **Happier** (compartilhar felicidade) | Microinterações positivas: vibração, confete, coraçãozinhos. | [Happier](https://www.happier.com/) |
 
 ---

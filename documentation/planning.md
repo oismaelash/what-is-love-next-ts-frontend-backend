@@ -3,7 +3,7 @@
 ## Prioridade 1: Configuração Inicial e Estrutura Base
 1. **Configuração do Ambiente de Desenvolvimento**
    - [ ] Criar projeto Next.js
-   - [ ] Configurar Material UI
+   - [X] Configurar Material UI
    - [ ] Configurar MongoDB e Mongoose
    - [ ] Configurar variáveis de ambiente (.env.local)
 
