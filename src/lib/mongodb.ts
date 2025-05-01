@@ -4,7 +4,15 @@ if (!process.env.MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
+if (!process.env.MONGODB_DB) {
+  throw new Error('Please define the MONGODB_DB environment variable inside .env');
+}
+
+// Add your desired database name here
+const DB_NAME = process.env.MONGODB_DB; // Change this to your preferred database name
+
+// Append the database name to the connection URI
+const MONGODB_URI = `${process.env.MONGODB_URI}`;
 
 let cached = global.mongoose;
 
@@ -20,6 +28,7 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      dbName: DB_NAME
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {

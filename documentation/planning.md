@@ -8,10 +8,10 @@
    - [X] Configurar variáveis de ambiente (.env.local)
 
 2. **Estrutura Base do Projeto**
-   - [ ] Implementar estrutura de diretórios conforme arquitetura
-   - [ ] Configurar rotas básicas do Next.js
+   - [X] Implementar estrutura de diretórios conforme arquitetura
+   - [X] Configurar rotas básicas do Next.js
    - [ ] Criar componentes base (Header, Footer)
-   - [ ] Configurar tema Material UI
+   - [X] Configurar tema Material UI
 
 3. **Documentação Necessária**
    - [ ] Ler documentação do Next.js para entender a estrutura de páginas e rotas (https://nextjs.org/docs)
@@ -27,9 +27,9 @@
 
 ## Prioridade 2: Funcionalidades Core
 1. **Sistema de Definições**
-   - [ ] Criar modelo Definition no MongoDB
-   - [ ] Implementar formulário de envio de definições
-   - [ ] Desenvolver API de criação de definições
+   - [X] Criar modelo Definition no MongoDB
+   - [X] Implementar formulário de envio de definições
+   - [X] Desenvolver API de criação de definições
    - [ ] Implementar validação com OpenAI
 
 2. **Exibição de Definições**
