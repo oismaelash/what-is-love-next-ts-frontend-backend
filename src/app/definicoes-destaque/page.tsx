@@ -167,7 +167,7 @@ export default function HighlightedDefinitionsPage() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Box sx={{ width: '100%', mb: 3 }}>
               <AdSense 
-                slot="1234567890" // Replace with your actual ad slot ID
+                slot="3158277650" // Replace with your actual ad slot ID
                 format="auto"
                 style={{ width: '100%', height: '90px' }}
               />
