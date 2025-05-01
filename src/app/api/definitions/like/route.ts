@@ -41,12 +41,17 @@ export async function POST(request: Request) {
     // If user is logged in, add the definition to their likedDefinitions
     if (userId) {
       console.log('Updating user liked definitions...');
-      const updatedUser = await User.findByIdAndUpdate(
-        userId,
+      
+      // First update the user
+      await User.updateOne(
+        { _id: userId },
         { $addToSet: { likedDefinitions: definitionId } },
         { new: true }
       );
 
+      // Then fetch the updated user with all fields
+      const updatedUser = await User.findById(userId).select('likedDefinitions');
+      
       if (!updatedUser) {
         console.error('User not found for update:', userId);
         return NextResponse.json(
@@ -55,7 +60,7 @@ export async function POST(request: Request) {
         );
       }
 
-      console.log('Updated user liked definitions:', updatedUser, updatedUser.likedDefinitions);
+      console.log('Updated user liked definitions:', updatedUser.likedDefinitions);
     }
 
     return NextResponse.json(definition);
