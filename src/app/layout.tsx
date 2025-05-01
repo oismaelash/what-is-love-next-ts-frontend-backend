@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import ThemeProvider from '../components/ThemeProvider';
 import { AuthProvider } from '@/context/AuthContext';
+import { FavoritesProvider } from '@/context/FavoritesContext';
+import ThemeRegistry from '@/components/ThemeRegistry';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Box } from '@mui/material';
@@ -36,35 +37,37 @@ export default function RootLayout({
         suppressHydrationWarning
         style={{ overflow: 'hidden' }}
       >
-        <ThemeProvider>
+        <ThemeRegistry>
           <AuthProvider>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                height: '100vh',
-                overflow: 'hidden',
-              }}
-            >
-              <Header />
+            <FavoritesProvider>
               <Box
-                component="main"
                 sx={{
-                  flex: 1,
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  width: '100%',
-                  overflow: 'auto',
+                  height: '100vh',
+                  overflow: 'hidden',
                 }}
               >
-                {children}
+                <Header />
+                <Box
+                  component="main"
+                  sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: '100%',
+                    overflow: 'auto',
+                  }}
+                >
+                  {children}
+                </Box>
+                <Footer />
               </Box>
-              <Footer />
-            </Box>
+            </FavoritesProvider>
           </AuthProvider>
-        </ThemeProvider>
+        </ThemeRegistry>
       </body>
     </html>
   );

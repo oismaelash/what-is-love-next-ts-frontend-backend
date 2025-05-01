@@ -25,6 +25,13 @@ const userSchema = new mongoose.Schema({
     }],
     default: []
   },
+  favorites: {
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Definition'
+    }],
+    default: []
+  },
   createdAt: {
     type: Date,
     default: Date.now,

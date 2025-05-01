@@ -47,11 +47,9 @@ const Header = () => {
             <Button color="inherit" component={Link} href="/definicoes">
               Definições
             </Button>
-            {user && (
-              <Button color="inherit" component={Link} href="/meus-amores">
+            <Button color="inherit" component={Link} href="/meus-amores">
                 Meus Amores
               </Button>
-            )}
             {user ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="body1" sx={{ color: 'inherit' }}>

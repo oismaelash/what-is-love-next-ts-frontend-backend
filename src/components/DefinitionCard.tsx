@@ -3,6 +3,7 @@ import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import { IDefinition } from '@/models/Definition';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import FavoriteButton from './FavoriteButton';
 
 interface DefinitionCardProps {
   definition: IDefinition;
@@ -72,6 +73,8 @@ export default function DefinitionCard({ definition, onLike, isLiked = false }: 
             >
               {definition.likes}
             </Typography>
+
+            <FavoriteButton definitionId={definition._id.toString()} />
           </Box>
         </Stack>
       </CardContent>

@@ -36,7 +36,7 @@
    - [X] Criar componente DefinitionCard
    - [X] Implementar infinite scroll
    - [X] Desenvolver sistema de curtidas
-   - [ ] Desenvolver sistema de saber quais definições o usuário já curtiu (usar localStorage e usuario logado)
+   - [X] Desenvolver sistema de saber quais definições o usuário já curtiu (usar localStorage e usuario logado)
    - [X] Implementar contador de definições
 
 ## Prioridade 3: Autenticação e Usuários
@@ -47,8 +47,8 @@
    - [ ] Implementar proteção de rotas
 
 2. **Funcionalidades de Usuário**
-   - [ ] Implementar sistema de favoritos
-   - [ ] Criar página "Meus Amores"
+   - [X] Implementar sistema de favoritos (usar localStorage e usuario logado)
+   - [X] Criar página "Meus Amores"
    - [ ] Desenvolver sistema de destaque de definições
 
 ## Prioridade 4: Monetização e Recursos Premium
