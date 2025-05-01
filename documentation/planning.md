@@ -50,13 +50,14 @@
    - [X] Implementar sistema de favoritos (usar localStorage e usuario logado)
    - [X] Criar página "Meus Amores"
    - [X] Desenvolver sistema de destaque de definições
+   - [X] Desenvolver pagina que mostra as definições que o usuario ja criou
 
 ## Prioridade 4: Monetização e Recursos Premium
 1. **Sistema de Pagamentos**
    - [X] Integrar Stripe para cartões
-   - [ ] Integrar Woovi para PIX
+   - [X] Integrar Woovi para PIX
    - [ ] Implementar webhooks de pagamento
-   - [ ] Criar página de destaque de definições
+   - [X] Criar página de destaque de definições
 
 2. **Sistema de E-mails**
    - [ ] Configurar AWS SES
