@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     if (!definitionId || !durationInDays) {
       return NextResponse.json(
-        { error: 'Missing metadata' },
+        { error: 'Missing additional info' },
         { status: 400 }
       );
     }
