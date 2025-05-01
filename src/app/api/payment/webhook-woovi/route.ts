@@ -5,9 +5,8 @@ import Definition from '@/models/Definition';
 
 export async function POST(request: Request) {
   try {
-    const event = await request.json();
-    console.log(event);
-    const payload = event.body;
+    const payload = await request.json();
+    console.log(payload);
     const headersList = await headers();
     const signature = headersList.get('x-webhook-signature');
 
