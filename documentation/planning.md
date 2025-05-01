@@ -4,8 +4,8 @@
 1. **Configuração do Ambiente de Desenvolvimento**
    - [ ] Criar projeto Next.js
    - [X] Configurar Material UI
-   - [ ] Configurar MongoDB e Mongoose
-   - [ ] Configurar variáveis de ambiente (.env.local)
+   - [X] Configurar MongoDB e Mongoose
+   - [X] Configurar variáveis de ambiente (.env.local)
 
 2. **Estrutura Base do Projeto**
    - [ ] Implementar estrutura de diretórios conforme arquitetura
