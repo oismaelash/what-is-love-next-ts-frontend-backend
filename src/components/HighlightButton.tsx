@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Typography, Box, Alert, CircularProgress } from '@mui/material';
-import { Star } from '@mui/icons-material';
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Typography, Box, Alert, CircularProgress, RadioGroup, FormControlLabel, Radio } from '@mui/material';
+import { Star, CreditCard, QrCode } from '@mui/icons-material';
 
 interface HighlightButtonProps {
   definitionId: string;
@@ -19,6 +19,8 @@ const HIGHLIGHT_PRICES: Record<number, number> = {
   14: 14.90,
   30: 24.90,
 };
+
+type PaymentMethod = 'stripe' | 'woovi';
 
 const DurationButton = ({ duration, price, isLoading, onClick }: DurationButtonProps) => (
   <Button
@@ -63,6 +65,9 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
   const [open, setOpen] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('stripe');
+  const [showPaymentSelection, setShowPaymentSelection] = useState(false);
+  const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
 
   const handleHighlight = async (durationInDays: number) => {
     try {
@@ -74,7 +79,11 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ definitionId, durationInDays }),
+        body: JSON.stringify({ 
+          definitionId, 
+          durationInDays,
+          paymentMethod 
+        }),
       });
 
       const checkoutData = await checkoutResponse.json();
@@ -116,7 +125,11 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
 
       <Dialog 
         open={open} 
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          setOpen(false);
+          setShowPaymentSelection(false);
+          setSelectedDuration(null);
+        }}
         PaperProps={{
           sx: {
             borderRadius: 2,
@@ -129,52 +142,134 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
           borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
           pb: 2
         }}>
-          Destacar Definição
+          {showPaymentSelection ? 'Escolha o método de pagamento' : 'Destacar Definição'}
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
-          <Typography gutterBottom sx={{ textAlign: 'center', mb: 3, color: '#666' }}>
-            Escolha por quanto tempo deseja destacar sua definição:
-          </Typography>
-          
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
 
-          <Box sx={{ 
-            display: 'flex', 
-            gap: 2, 
-            mt: 2,
-            flexDirection: { xs: 'column', sm: 'row' }
-          }}>
-            {Object.entries(HIGHLIGHT_PRICES).map(([duration, price]) => (
-              <DurationButton
-                key={duration}
-                duration={Number(duration)}
-                price={price}
-                isLoading={isLoading}
-                onClick={handleHighlight}
-              />
-            ))}
-          </Box>
+          {!showPaymentSelection ? (
+            <>
+              <Typography gutterBottom sx={{ textAlign: 'center', mb: 3, color: '#666' }}>
+                Escolha por quanto tempo deseja destacar sua definição:
+              </Typography>
+              
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 2, 
+                mt: 2,
+                flexDirection: { xs: 'column', sm: 'row' }
+              }}>
+                {Object.entries(HIGHLIGHT_PRICES).map(([duration, price]) => (
+                  <DurationButton
+                    key={duration}
+                    duration={Number(duration)}
+                    price={price}
+                    isLoading={isLoading}
+                    onClick={(duration) => {
+                      setSelectedDuration(duration);
+                      setShowPaymentSelection(true);
+                    }}
+                  />
+                ))}
+              </Box>
+            </>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography gutterBottom sx={{ textAlign: 'center', mb: 2, color: '#666' }}>
+                Como você deseja pagar?
+              </Typography>
+              <RadioGroup
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                sx={{ gap: 2 }}
+              >
+                <FormControlLabel
+                  value="stripe"
+                  control={<Radio />}
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CreditCard sx={{ color: '#ff4081' }} />
+                      <Box>
+                        <Typography>Cartão de Crédito</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Pagamento seguro via Stripe
+                        </Typography>
+                      </Box>
+                    </Box>
+                  }
+                />
+                <FormControlLabel
+                  value="woovi"
+                  control={<Radio />}
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <QrCode sx={{ color: '#ff4081' }} />
+                      <Box>
+                        <Typography>PIX</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Pagamento instantâneo via Woovi
+                        </Typography>
+                      </Box>
+                    </Box>
+                  }
+                />
+              </RadioGroup>
+            </Box>
+          )}
         </DialogContent>
         <DialogActions sx={{ 
           justifyContent: 'center',
           p: 2,
           borderTop: '1px solid rgba(0, 0, 0, 0.12)'
         }}>
-          <Button 
-            onClick={() => setOpen(false)}
-            sx={{ 
-              color: '#ff4081',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 64, 129, 0.04)',
-              }
-            }}
-          >
-            Cancelar
-          </Button>
+          {showPaymentSelection ? (
+            <>
+              <Button 
+                onClick={() => setShowPaymentSelection(false)}
+                sx={{ 
+                  color: '#ff4081',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 64, 129, 0.04)',
+                  }
+                }}
+              >
+                Voltar
+              </Button>
+              <Button 
+                onClick={() => selectedDuration && handleHighlight(selectedDuration)}
+                variant="contained"
+                disabled={isLoading}
+                sx={{ 
+                  backgroundColor: '#ff4081',
+                  '&:hover': {
+                    backgroundColor: '#f50057',
+                  }
+                }}
+              >
+                {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Pagar'}
+              </Button>
+            </>
+          ) : (
+            <Button 
+              onClick={() => {
+                setOpen(false);
+                setShowPaymentSelection(false);
+                setSelectedDuration(null);
+              }}
+              sx={{ 
+                color: '#ff4081',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 64, 129, 0.04)',
+                }
+              }}
+            >
+              Cancelar
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </>
