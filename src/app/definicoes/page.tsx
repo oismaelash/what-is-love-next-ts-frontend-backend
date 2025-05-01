@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Box, CircularProgress, Typography, Container, Snackbar, Alert } from '@mui/material';
 import DefinitionCard from '@/components/DefinitionCard';
 import { IDefinition } from '@/models/Definition';
+import { useAuth } from '@/context/AuthContext';
 
 interface ApiResponse {
   definitions: IDefinition[];
@@ -19,7 +20,9 @@ export default function DefinitionsPage() {
     message: '',
     severity: 'success'
   });
+  const { user } = useAuth();
 
+  // Fetch definitions
   useEffect(() => {
     const fetchDefinitions = async () => {
       try {
@@ -34,6 +37,7 @@ export default function DefinitionsPage() {
         }
 
         setDefinitions(data.definitions);
+        console.log('Definitions loaded:', data.definitions.length);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -43,6 +47,39 @@ export default function DefinitionsPage() {
 
     fetchDefinitions();
   }, []);
+
+  // Load liked definitions
+  useEffect(() => {
+    const loadLikedDefinitions = async () => {
+      console.log('Loading liked definitions for user:', user?._id);
+      
+      if (user) {
+        try {
+          const response = await fetch('/api/user/liked-definitions', {
+            credentials: 'include',
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Liked definitions from DB:', data.likedDefinitions);
+            setLikedDefinitions(new Set(data.likedDefinitions));
+          } else {
+            console.error('Failed to fetch liked definitions:', response.status);
+          }
+        } catch (error) {
+          console.error('Error fetching liked definitions:', error);
+        }
+      } else {
+        const storedLikes = localStorage.getItem('likedDefinitions');
+        console.log('Liked definitions from localStorage:', storedLikes);
+        if (storedLikes) {
+          setLikedDefinitions(new Set(JSON.parse(storedLikes)));
+        }
+      }
+    };
+
+    loadLikedDefinitions();
+  }, [user]);
 
   const handleLike = async (definitionId: string) => {
     try {
@@ -62,6 +99,7 @@ export default function DefinitionsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ definitionId }),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -69,6 +107,7 @@ export default function DefinitionsPage() {
       }
 
       const updatedDefinition = await response.json();
+      console.log('Definition liked:', updatedDefinition._id);
       
       // Update the definition in the list
       setDefinitions(definitions.map(def => 
@@ -76,7 +115,14 @@ export default function DefinitionsPage() {
       ));
 
       // Add to liked definitions
-      setLikedDefinitions(prev => new Set(prev).add(definitionId));
+      const newLikedDefinitions = new Set(likedDefinitions).add(definitionId);
+      setLikedDefinitions(newLikedDefinitions);
+      console.log('Updated liked definitions:', Array.from(newLikedDefinitions));
+
+      // For non-logged-in users, save to localStorage
+      if (!user) {
+        localStorage.setItem('likedDefinitions', JSON.stringify(Array.from(newLikedDefinitions)));
+      }
 
       setSnackbar({
         open: true,
@@ -84,6 +130,7 @@ export default function DefinitionsPage() {
         severity: 'success'
       });
     } catch (err) {
+      console.error('Error liking definition:', err);
       setSnackbar({
         open: true,
         message: 'Erro ao curtir definição',
@@ -154,10 +201,9 @@ export default function DefinitionsPage() {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
+        <Alert
+          onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >

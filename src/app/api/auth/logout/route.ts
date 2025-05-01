@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 export async function POST() {
   try {
     const response = NextResponse.json(
-      { message: 'Logout realizado com sucesso' },
+      { message: 'Logout successful' },
       { status: 200 }
     );
 

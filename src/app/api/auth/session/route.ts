@@ -5,17 +5,23 @@ import User from '@/models/User';
 
 export async function GET() {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const session = cookieStore.get('session');
+    
+    console.log('Session cookie:', session);
 
     if (!session) {
+      console.log('No session found');
       return NextResponse.json({ user: null }, { status: 200 });
     }
 
     await connectDB();
 
     const user = await User.findById(session.value);
+    console.log('User found:', user ? user._id : null);
+
     if (!user) {
+      console.log('No user found for session');
       return NextResponse.json({ user: null }, { status: 200 });
     }
 

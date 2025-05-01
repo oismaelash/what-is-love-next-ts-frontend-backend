@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
-  id: string;
+  _id: string;
   email: string;
   name: string;
 }
@@ -26,10 +26,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check if user is logged in
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/auth/session');
+        console.log('Checking auth status...');
+        const response = await fetch('/api/auth/session', {
+          credentials: 'include',
+        });
+        
         if (response.ok) {
           const data = await response.json();
+          console.log('Auth response:', data);
           setUser(data.user);
+        } else {
+          console.log('Auth check failed:', response.status);
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
@@ -46,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
-      credentials: 'include', // Important for cookies
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -55,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
+    console.log('Login successful:', data);
     setUser(data.user);
   };
 
@@ -63,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password }),
-      credentials: 'include', // Important for cookies
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -72,19 +80,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
+    console.log('Registration successful:', data);
     setUser(data.user);
   };
 
   const logout = async () => {
     const response = await fetch('/api/auth/logout', {
       method: 'POST',
-      credentials: 'include', // Important for cookies
+      credentials: 'include',
     });
 
     if (!response.ok) {
       throw new Error('Erro ao fazer logout');
     }
 
+    console.log('Logout successful');
     setUser(null);
   };
 

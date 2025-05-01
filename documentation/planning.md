@@ -41,9 +41,9 @@
 
 ## Prioridade 3: Autenticação e Usuários
 1. **Sistema de Autenticação**
-   - [ ] Implementar registro de usuário e login com MongoDB
-   - [ ] Criar páginas de login/registro
-   - [ ] Desenvolver contexto de autenticação
+   - [X] Implementar registro de usuário e login com MongoDB
+   - [X] Criar páginas de login/registro
+   - [X] Desenvolver contexto de autenticação
    - [ ] Implementar proteção de rotas
 
 2. **Funcionalidades de Usuário**

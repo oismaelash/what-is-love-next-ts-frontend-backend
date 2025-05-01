@@ -18,6 +18,13 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Nome é obrigatório'],
     trim: true,
   },
+  likedDefinitions: {
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Definition'
+    }],
+    default: []
+  },
   createdAt: {
     type: Date,
     default: Date.now,
