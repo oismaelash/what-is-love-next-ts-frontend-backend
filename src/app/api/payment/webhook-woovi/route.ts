@@ -27,13 +27,28 @@ export async function POST(request: Request) {
     // TODO: Verify webhook signature with Woovi secret
     // For now, we'll trust the webhook
 
-    const { definitionId, durationInDays } = payload.additionalInfo.reduce(
-      (acc: Record<string, string>, info: { key: string; value: string }) => {
-        acc[info.key] = info.value;
-        return acc;
-      },
-      {}
-    );
+    // sample payload
+    // payload.additionalInfo = [
+    //   {
+    //     "key": "definitionId",
+    //     "value": "6813f5055752c12bc6c8595e"
+    //   },
+    //   {
+    //     "key": "durationInDays",
+    //     "value": "1"
+    //   }
+    // ]
+
+    let definitionId = '';
+    let durationInDays = '';
+
+    payload.additionalInfo.forEach((info: { key: string; value: string }) => {
+      if (info.key === 'definitionId') {
+        definitionId = info.value;
+      } else if (info.key === 'durationInDays') {
+        durationInDays = info.value;
+      }
+    });
 
     if (!definitionId || !durationInDays) {
       return NextResponse.json(
