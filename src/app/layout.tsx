@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from '../components/ThemeProvider';
+import { AuthProvider } from '@/context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Box } from '@mui/material';
@@ -36,31 +37,33 @@ export default function RootLayout({
         style={{ overflow: 'hidden' }}
       >
         <ThemeProvider>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              height: '100vh',
-              overflow: 'hidden',
-            }}
-          >
-            <Header />
+          <AuthProvider>
             <Box
-              component="main"
               sx={{
-                flex: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-                overflow: 'auto',
+                height: '100vh',
+                overflow: 'hidden',
               }}
             >
-              {children}
+              <Header />
+              <Box
+                component="main"
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '100%',
+                  overflow: 'auto',
+                }}
+              >
+                {children}
+              </Box>
+              <Footer />
             </Box>
-            <Footer />
-          </Box>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
