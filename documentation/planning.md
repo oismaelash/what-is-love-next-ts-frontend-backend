@@ -49,11 +49,11 @@
 2. **Funcionalidades de Usuário**
    - [X] Implementar sistema de favoritos (usar localStorage e usuario logado)
    - [X] Criar página "Meus Amores"
-   - [ ] Desenvolver sistema de destaque de definições
+   - [X] Desenvolver sistema de destaque de definições
 
 ## Prioridade 4: Monetização e Recursos Premium
 1. **Sistema de Pagamentos**
-   - [ ] Integrar Stripe para cartões
+   - [X] Integrar Stripe para cartões
    - [ ] Integrar Woovi para PIX
    - [ ] Implementar webhooks de pagamento
    - [ ] Criar página de destaque de definições
