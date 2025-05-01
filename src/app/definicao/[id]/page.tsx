@@ -6,7 +6,16 @@ import DefinitionCard from '@/components/DefinitionCard';
 import { IDefinition } from '@/models/Definition';
 import { useAuth } from '@/context/AuthContext';
 
-export default function DefinitionPage({ params }: { params: { id: string } }) {
+type Params = Promise<{ id: string }>
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>
+
+export default function DefinitionPage(props: {
+  params: Params
+  searchParams: SearchParams
+}) {
+    // @ts-expect-error - NEXT 15 BREAKING CHANGE
+    const id = props.params.id
+
   const [definition, setDefinition] = useState<IDefinition | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,8 +33,8 @@ export default function DefinitionPage({ params }: { params: { id: string } }) {
       try {
         setLoading(true);
         setError(null);
-        
-        const response = await fetch(`/api/definitions/${params.id}`);
+
+        const response = await fetch(`/api/definitions/${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch definition');
         }
@@ -40,7 +49,7 @@ export default function DefinitionPage({ params }: { params: { id: string } }) {
     };
 
     fetchDefinition();
-  }, [params.id]);
+  }, [id]);
 
   // Load liked definitions
   useEffect(() => {
@@ -50,7 +59,7 @@ export default function DefinitionPage({ params }: { params: { id: string } }) {
           const response = await fetch('/api/user/liked-definitions', {
             credentials: 'include',
           });
-          
+
           if (response.ok) {
             const data = await response.json();
             setLikedDefinitions(new Set(data.likedDefinitions));
@@ -96,7 +105,7 @@ export default function DefinitionPage({ params }: { params: { id: string } }) {
 
       const updatedDefinition = await response.json();
       setDefinition(updatedDefinition);
-      
+
       // Add to liked definitions
       const newLikedDefinitions = new Set(likedDefinitions).add(definitionId);
       setLikedDefinitions(newLikedDefinitions);
@@ -156,8 +165,8 @@ export default function DefinitionPage({ params }: { params: { id: string } }) {
           Uma definição especial sobre o que é amor
         </Typography>
       </Box>
-      
-      <DefinitionCard 
+
+      <DefinitionCard
         definition={definition}
         onLike={() => handleLike(definition._id.toString())}
         isLiked={likedDefinitions.has(definition._id.toString())}

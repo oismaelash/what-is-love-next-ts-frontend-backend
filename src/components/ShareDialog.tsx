@@ -3,7 +3,6 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography } from '@mui/material';
 import { Share, Download } from '@mui/icons-material';
 import {QRCodeCanvas} from 'qrcode.react';
-import { useState } from 'react';
 
 interface ShareDialogProps {
   open: boolean;
@@ -12,7 +11,7 @@ interface ShareDialogProps {
 }
 
 export default function ShareDialog({ open, onClose, definitionId }: ShareDialogProps) {
-  const shareUrl = `${window.location.origin}/definition/${definitionId}`;
+  const shareUrl = `${window.location.origin}/definicao/${definitionId}`;
 
   const handleCopyLink = async () => {
     try {

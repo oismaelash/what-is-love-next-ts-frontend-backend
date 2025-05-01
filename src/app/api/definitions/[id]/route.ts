@@ -1,15 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Definition from '@/models/Definition';
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string[] }> },
 ) {
   try {
+    const id = (await params).id;
+    
     await connectDB();
 
-    const definition = await Definition.findById(params.id);
+    const definition = await Definition.findById(id);
 
     if (!definition) {
       return NextResponse.json(
