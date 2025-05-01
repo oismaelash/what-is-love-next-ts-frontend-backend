@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
-import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
   try {
@@ -36,7 +35,8 @@ export async function POST(request: Request) {
     }
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user.toObject();
+    // eslint-disable-next-line
+    const { password: _password, ...userWithoutPassword } = user.toObject();
 
     // Set session cookie
     const response = NextResponse.json(

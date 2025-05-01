@@ -1,4 +1,3 @@
-import Image from "next/image";
 import DefinitionForm from './components/DefinitionForm';
 import { Button, Box, Typography, Container } from '@mui/material';
 import Link from 'next/link';

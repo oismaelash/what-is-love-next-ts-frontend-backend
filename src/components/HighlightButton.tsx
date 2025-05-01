@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Typography, Box, Alert, CircularProgress, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import { Star, CreditCard, QrCode } from '@mui/icons-material';
+import Image from 'next/image';
 import { HIGHLIGHT_PRICES } from '@/utils/constants';
 
 interface HighlightButtonProps {
@@ -89,8 +90,9 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
       } else {
         setError('Pagamento ainda não confirmado. Tente novamente em alguns instantes.');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Erro ao verificar status do pagamento');
+      console.error('Erro ao verificar status do pagamento:', _err);
     } finally {
       setIsCheckingPayment(false);
     }
@@ -189,9 +191,11 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
               <Typography gutterBottom sx={{ textAlign: 'center', color: '#666' }}>
                 Escaneie o QR Code abaixo para pagar com PIX:
               </Typography>
-              <img 
+              <Image 
                 src={pixData.qrCodeImage} 
                 alt="QR Code PIX" 
+                width={200}
+                height={200}
                 style={{ maxWidth: '200px', width: '100%' }}
               />
               <Box sx={{ 

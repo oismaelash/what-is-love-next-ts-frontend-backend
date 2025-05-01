@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
     if (body.status === 'COMPLETED') {
       const { definitionId, durationInDays } = body.additionalInfo.reduce(
-        (acc: any, info: { key: string; value: string }) => {
+        (acc: Record<string, string>, info: { key: string; value: string }) => {
           acc[info.key] = info.value;
           return acc;
         },

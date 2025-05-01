@@ -26,7 +26,7 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      favorites: user.favorites.map((id: any) => id.toString())
+      favorites: user.favorites.map((id: string | { toString(): string }) => id.toString())
     });
   } catch (error) {
     console.error('Error fetching favorites:', error);
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      favorites: user.favorites.map((id: any) => id.toString())
+      favorites: user.favorites.map((id: string | { toString(): string }) => id.toString())
     });
   } catch (error) {
     console.error('Error adding favorite:', error);
@@ -122,7 +122,7 @@ export async function DELETE(request: Request) {
     }
 
     return NextResponse.json({
-      favorites: user.favorites.map((id: any) => id.toString())
+      favorites: user.favorites.map((id: string | { toString(): string }) => id.toString())
     });
   } catch (error) {
     console.error('Error removing favorite:', error);

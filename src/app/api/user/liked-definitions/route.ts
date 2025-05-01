@@ -34,7 +34,7 @@ export async function GET() {
     console.log('Found liked definitions:', likedDefinitions);
 
     return NextResponse.json({
-      likedDefinitions: likedDefinitions.map((id: any) => id.toString())
+      likedDefinitions: likedDefinitions.map((id: string | { toString(): string }) => id.toString())
     });
   } catch (error) {
     console.error('Error fetching liked definitions:', error);

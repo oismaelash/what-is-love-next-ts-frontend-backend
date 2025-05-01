@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string[] }> },
 ) {
   try {
-    const { id } = params;
+    const id = (await params).id;
 
     if (!id) {
       return NextResponse.json(

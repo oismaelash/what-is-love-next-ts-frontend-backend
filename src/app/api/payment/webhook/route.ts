@@ -34,7 +34,12 @@ export async function POST(request: Request) {
 
     if (event.type === 'checkout.session.completed' || event.type === 'charge.succeeded') {
       // console.log('Event received:', event.type);
-      const session = event.data.object as any;
+      const session = (event.data.object as unknown) as {
+        metadata: {
+          definitionId: string;
+          durationInDays: string;
+        };
+      };
       const { definitionId, durationInDays } = session.metadata;
 
       if (!definitionId || !durationInDays) {

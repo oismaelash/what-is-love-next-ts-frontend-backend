@@ -26,7 +26,8 @@ export async function GET() {
     }
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user.toObject();
+    // eslint-disable-next-line
+    const { password: _password, ...userWithoutPassword } = user.toObject();
 
     return NextResponse.json(
       { user: userWithoutPassword },

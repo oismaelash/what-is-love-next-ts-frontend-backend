@@ -1,5 +1,13 @@
 import mongoose from 'mongoose';
 
+declare global {
+  // eslint-disable-next-line no-var
+  var mongooseCache: {
+    conn: typeof mongoose | null;
+    promise: Promise<typeof mongoose> | null;
+  };
+}
+
 if (!process.env.MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
@@ -14,10 +22,10 @@ const DB_NAME = process.env.MONGODB_DB; // Change this to your preferred databas
 // Append the database name to the connection URI
 const MONGODB_URI = `${process.env.MONGODB_URI}`;
 
-let cached = global.mongoose;
+let cached = global.mongooseCache;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = global.mongooseCache = { conn: null, promise: null };
 }
 
 async function connectDB() {

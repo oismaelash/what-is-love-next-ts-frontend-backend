@@ -13,7 +13,11 @@ import {
 
 export default function TestModeratePage() {
   const [content, setContent] = useState('');
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{
+    isApproved: boolean;
+    reason?: string;
+    content: string;
+  } | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 

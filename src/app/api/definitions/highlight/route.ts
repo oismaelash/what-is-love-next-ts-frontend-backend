@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import Definition from '@/models/Definition';
-import User from '@/models/User';
 
 export async function POST(request: Request) {
   try {
