@@ -42,7 +42,9 @@ export async function POST(request: Request) {
     let definitionId = '';
     let durationInDays = '';
 
-    payload.additionalInfo.forEach((info: { key: string; value: string }) => {
+    console.log(payload.charge.additionalInfo);
+
+    payload.charge.additionalInfo.forEach((info: { key: string; value: string }) => {
       if (info.key === 'definitionId') {
         definitionId = info.value;
       } else if (info.key === 'durationInDays') {
