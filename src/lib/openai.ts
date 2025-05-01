@@ -1,10 +1,7 @@
-import { getRuntimeEnv } from '@/utils/envRuntime';
 import OpenAI from 'openai';
 
-const runtimeEnv = getRuntimeEnv();
-
 const openai = new OpenAI({
-  apiKey: runtimeEnv.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY!,
 });
 
 export async function moderateContent(content: string): Promise<{
@@ -14,7 +11,7 @@ export async function moderateContent(content: string): Promise<{
   try {
     const response = await openai.moderations.create({
       input: content,
-      model: runtimeEnv.OPENAI_MODEL
+      model: process.env.OPENAI_MODEL!
     });
 
     const result = response.results[0];

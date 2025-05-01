@@ -3,9 +3,6 @@ import { headers } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import Definition from '@/models/Definition';
 import { stripe } from '@/lib/stripe';
-import { getRuntimeEnv } from '@/utils/envRuntime';
-
-const runtimeEnv = getRuntimeEnv();
 
 export async function POST(request: Request) {
   try {
@@ -25,7 +22,7 @@ export async function POST(request: Request) {
       event = stripe.webhooks.constructEvent(
         body,
         signature,
-        runtimeEnv.STRIPE_WEBHOOK_SECRET!
+        process.env.STRIPE_WEBHOOK_SECRET!
       );
     } catch (err) {
       console.error('Webhook signature verification failed:', err);

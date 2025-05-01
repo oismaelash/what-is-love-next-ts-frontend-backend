@@ -1,4 +1,3 @@
-import { getRuntimeEnv } from '@/utils/envRuntime';
 import mongoose from 'mongoose';
 
 declare global {
@@ -8,19 +7,6 @@ declare global {
     promise: Promise<typeof mongoose> | null;
   };
 }
-
-const runtimeEnv = getRuntimeEnv();
-const MONGODB_URI = runtimeEnv.MONGODB_URI || '';
-const MONGODB_DB = runtimeEnv.MONGODB_DB || '';
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env');
-}
-
-if (!MONGODB_DB) {
-  throw new Error('Please define the MONGODB_DB environment variable inside .env');
-}
-
 
 let cached = global.mongooseCache;
 
@@ -36,10 +22,10 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      dbName: MONGODB_DB
+      dbName: process.env.MONGODB_DB!,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(process.env.MONGODB_URI!, opts).then((mongoose) => {
       return mongoose;
     });
   }

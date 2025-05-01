@@ -1,7 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getRuntimeEnv } from '@/utils/envRuntime';
-
-const runtimeEnv = getRuntimeEnv();
 
 export async function GET(request: Request) {
   try {
@@ -19,7 +16,7 @@ export async function GET(request: Request) {
       `https://api.openpix.com.br/api/v1/charge/${correlationID}`,
       {
         headers: {
-          'Authorization': runtimeEnv.WOOVI_API_KEY || '',
+          'Authorization': process.env.WOOVI_API_KEY!,
           'Content-Type': 'application/json',
         },
       }
