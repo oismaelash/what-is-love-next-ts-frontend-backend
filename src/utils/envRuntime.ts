@@ -8,7 +8,9 @@ export const getRuntimeEnv = () => {
   if (fs.existsSync(envPath)) {
     const envConfig = dotenv.parse(fs.readFileSync(envPath));
     return envConfig;
+  } else {
+    // for works on pipeline github actions
+    fs.writeFileSync(envPath, '');
+    return {};
   }
-
-  throw new Error('.env file not found');
 };
