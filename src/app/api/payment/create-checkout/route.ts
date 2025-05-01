@@ -3,20 +3,16 @@ import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { createCheckoutSession, HighlightDuration } from '@/lib/stripe';
-
-const HIGHLIGHT_PRICES = {
-  7: 990, // R$ 9,90
-  14: 1490, // R$ 14,90
-  30: 2490, // R$ 24,90
-};
+import { createPixCharge } from '@/lib/woovi';
+import { HIGHLIGHT_PRICES } from '@/utils/constants';
 
 export async function POST(request: Request) {
   try {
-    const { definitionId, durationInDays } = await request.json();
+    const { definitionId, durationInDays, paymentMethod } = await request.json();
 
-    if (!definitionId || !durationInDays) {
+    if (!definitionId || !durationInDays || !paymentMethod) {
       return NextResponse.json(
-        { error: 'ID da definição e duração são obrigatórios' },
+        { error: 'ID da definição, duração e método de pagamento são obrigatórios' },
         { status: 400 }
       );
     }
@@ -53,16 +49,36 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create Stripe checkout session
-    const stripeSession = await createCheckoutSession(
-      definitionId,
-      durationInDays as HighlightDuration,
-      userId
-    );
+    if (paymentMethod === 'stripe') {
+      // Create Stripe checkout session
+      const stripeSession = await createCheckoutSession(
+        definitionId,
+        durationInDays as HighlightDuration,
+        userId
+      );
 
-    return NextResponse.json({
-      checkoutUrl: stripeSession.url,
-    });
+      return NextResponse.json({
+        checkoutUrl: stripeSession.url,
+      });
+    } else if (paymentMethod === 'woovi') {
+      // Create PIX charge
+      const pixCharge = await createPixCharge(
+        definitionId,
+        durationInDays as HighlightDuration,
+        userId
+      );
+
+      return NextResponse.json({
+        pixKey: pixCharge.charge.brCode,
+        qrCodeImage: pixCharge.charge.qrCodeImage,
+        correlationID: pixCharge.correlationID,
+      });
+    } else {
+      return NextResponse.json(
+        { error: 'Método de pagamento inválido' },
+        { status: 400 }
+      );
+    }
   } catch (error) {
     console.error('Error creating checkout:', error);
     return NextResponse.json(

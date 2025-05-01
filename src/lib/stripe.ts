@@ -1,3 +1,4 @@
+import { HIGHLIGHT_PRICES } from '@/utils/constants';
 import Stripe from 'stripe';
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -8,12 +9,6 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-04-30.basil',
   typescript: true,
 });
-
-export const HIGHLIGHT_PRICES = {
-  7: 990, // R$ 9,90
-  14: 1490, // R$ 14,90
-  30: 2490, // R$ 24,90
-} as const;
 
 export type HighlightDuration = keyof typeof HIGHLIGHT_PRICES;
 
@@ -40,8 +35,8 @@ export const createCheckoutSession = async (
       },
     ],
     mode: 'payment',
-    success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/definicoes?highlight=success`,
-    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/definicoes?highlight=cancelled`,
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicoes?highlight=success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicoes?highlight=cancelled`,
     metadata: {
       definitionId,
       durationInDays: durationInDays.toString(),

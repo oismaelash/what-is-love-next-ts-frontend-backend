@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Typography, Box, Alert, CircularProgress, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import { Star, CreditCard, QrCode } from '@mui/icons-material';
+import { HIGHLIGHT_PRICES } from '@/utils/constants';
 
 interface HighlightButtonProps {
   definitionId: string;
@@ -13,12 +14,6 @@ interface DurationButtonProps {
   isLoading: boolean;
   onClick: (duration: number) => void;
 }
-
-const HIGHLIGHT_PRICES: Record<number, number> = {
-  7: 9.90,
-  14: 14.90,
-  30: 24.90,
-};
 
 type PaymentMethod = 'stripe' | 'woovi';
 
@@ -55,7 +50,7 @@ const DurationButton = ({ duration, price, isLoading, onClick }: DurationButtonP
         }}
       >
         <span style={{ fontSize: '1rem', fontWeight: 500 }}>{duration} dias</span>
-        <span style={{ color: '#ff4081', fontWeight: 600 }}>R$ {price.toFixed(2)}</span>
+        <span style={{ color: '#ff4081', fontWeight: 600 }}>R$ {(price / 100).toFixed(2)}</span>
       </Typography>
     )}
   </Button>
@@ -68,6 +63,38 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('stripe');
   const [showPaymentSelection, setShowPaymentSelection] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
+  const [pixData, setPixData] = useState<{
+    pixKey: string;
+    qrCodeImage: string;
+    correlationID: string;
+  } | null>(null);
+  const [showCopiedMessage, setShowCopiedMessage] = useState(false);
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+
+  const checkPaymentStatus = async () => {
+    if (!pixData) return;
+    
+    try {
+      setIsCheckingPayment(true);
+      const response = await fetch(`/api/payment/check-pix-status?correlationID=${pixData.correlationID}`);
+      const data = await response.json();
+
+      if (data.paid) {
+        // Payment was successful, close the dialog and refresh the page
+        setOpen(false);
+        setShowPaymentSelection(false);
+        setSelectedDuration(null);
+        setPixData(null);
+        window.location.reload();
+      } else {
+        setError('Pagamento ainda não confirmado. Tente novamente em alguns instantes.');
+      }
+    } catch (err) {
+      setError('Erro ao verificar status do pagamento');
+    } finally {
+      setIsCheckingPayment(false);
+    }
+  };
 
   const handleHighlight = async (durationInDays: number) => {
     try {
@@ -92,7 +119,11 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
         throw new Error(checkoutData.error || 'Erro ao criar checkout');
       }
 
-      window.location.href = checkoutData.checkoutUrl;
+      if (paymentMethod === 'stripe') {
+        window.location.href = checkoutData.checkoutUrl;
+      } else if (paymentMethod === 'woovi') {
+        setPixData(checkoutData);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao destacar definição');
     } finally {
@@ -129,6 +160,7 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
           setOpen(false);
           setShowPaymentSelection(false);
           setSelectedDuration(null);
+          setPixData(null);
         }}
         PaperProps={{
           sx: {
@@ -142,16 +174,103 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
           borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
           pb: 2
         }}>
-          {showPaymentSelection ? 'Escolha o método de pagamento' : 'Destacar Definição'}
+          {pixData ? 'Pague com PIX' : showPaymentSelection ? 'Escolha o método de pagamento' : 'Destacar Definição'}
         </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
+        
+        <DialogContent>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ mb: 2, mt: 2 }}>
               {error}
             </Alert>
           )}
 
-          {!showPaymentSelection ? (
+          {pixData ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <Typography gutterBottom sx={{ textAlign: 'center', color: '#666' }}>
+                Escaneie o QR Code abaixo para pagar com PIX:
+              </Typography>
+              <img 
+                src={pixData.qrCodeImage} 
+                alt="QR Code PIX" 
+                style={{ maxWidth: '200px', width: '100%' }}
+              />
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                gap: 1,
+                width: '100%',
+                maxWidth: '300px',
+                p: 2,
+                bgcolor: 'rgba(0, 0, 0, 0.02)',
+                borderRadius: 1,
+                position: 'relative'
+              }}>
+                <Typography variant="caption" sx={{ color: '#666' }}>
+                  Ou copie a chave PIX (Clique para copiar):
+                </Typography>
+                <Typography 
+                  sx={{ 
+                    wordBreak: 'break-all',
+                    textAlign: 'center',
+                    fontFamily: 'monospace',
+                    fontSize: '0.8rem',
+                    color: '#333',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      color: '#ff4081'
+                    }
+                  }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(pixData.pixKey);
+                    setShowCopiedMessage(true);
+                    setTimeout(() => setShowCopiedMessage(false), 2000);
+                  }}
+                >
+                  {pixData.pixKey}
+                </Typography>
+                {showCopiedMessage && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      bgcolor: 'rgba(0, 0, 0, 0.8)',
+                      color: 'white',
+                      px: 2,
+                      py: 1,
+                      borderRadius: 1,
+                      fontSize: '0.8rem',
+                      zIndex: 1
+                    }}
+                  >
+                    Chave PIX copiada!
+                  </Box>
+                )}
+              </Box>
+              <Button
+                variant="contained"
+                onClick={checkPaymentStatus}
+                disabled={isCheckingPayment}
+                sx={{
+                  backgroundColor: '#ff4081',
+                  '&:hover': {
+                    backgroundColor: '#f50057',
+                  }
+                }}
+              >
+                {isCheckingPayment ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  'Verificar Pagamento'
+                )}
+              </Button>
+              <Typography variant="caption" sx={{ color: '#666', textAlign: 'center' }}>
+                Após o pagamento, sua definição será destacada automaticamente.
+              </Typography>
+            </Box>
+          ) : !showPaymentSelection ? (
             <>
               <Typography gutterBottom sx={{ textAlign: 'center', mb: 3, color: '#666' }}>
                 Escolha por quanto tempo deseja destacar sua definição:
@@ -226,7 +345,24 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
           p: 2,
           borderTop: '1px solid rgba(0, 0, 0, 0.12)'
         }}>
-          {showPaymentSelection ? (
+          {pixData ? (
+            <Button 
+              onClick={() => {
+                setOpen(false);
+                setShowPaymentSelection(false);
+                setSelectedDuration(null);
+                setPixData(null);
+              }}
+              sx={{ 
+                color: '#ff4081',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 64, 129, 0.04)',
+                }
+              }}
+            >
+              Fechar
+            </Button>
+          ) : showPaymentSelection ? (
             <>
               <Button 
                 onClick={() => setShowPaymentSelection(false)}
