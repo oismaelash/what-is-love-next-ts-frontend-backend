@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Definition from '@/models/Definition';
+import { checkHighlightExpiration } from '@/lib/checkHighlightExpiration';
+import { LeanDefinition } from '@/types/definition';
 
 export async function GET(request: Request) {
   try {
@@ -19,7 +21,15 @@ export async function GET(request: Request) {
       .sort({ createdAt: -1 })
       .lean();
 
-    return NextResponse.json({ definitions });
+    // Check highlight expiration for each definition
+    const updatedDefinitions = await Promise.all(
+      definitions.map(async (definition) => {
+        const updatedDefinition = await checkHighlightExpiration((definition as unknown as LeanDefinition)._id.toString());
+        return updatedDefinition || definition;
+      })
+    );
+
+    return NextResponse.json({ definitions: updatedDefinitions });
   } catch (error) {
     console.error('Error fetching definitions:', error);
     return NextResponse.json(

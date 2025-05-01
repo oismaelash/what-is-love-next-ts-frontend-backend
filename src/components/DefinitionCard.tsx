@@ -1,9 +1,12 @@
-import { Card, CardContent, Typography, Box, IconButton, Stack } from '@mui/material';
-import { Favorite, FavoriteBorder } from '@mui/icons-material';
+import { Card, CardContent, Typography, Box, IconButton, Stack, Chip } from '@mui/material';
+import { Favorite, FavoriteBorder, Star } from '@mui/icons-material';
 import { IDefinition } from '@/models/Definition';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import FavoriteButton from './FavoriteButton';
+import HighlightButton from './HighlightButton';
+import { useAuth } from '@/context/AuthContext';
+import { useState, useEffect } from 'react';
 
 interface DefinitionCardProps {
   definition: IDefinition;
@@ -11,72 +14,95 @@ interface DefinitionCardProps {
   isLiked?: boolean;
 }
 
-export default function DefinitionCard({ definition, onLike, isLiked = false }: DefinitionCardProps) {
+export default function DefinitionCard({ definition, onLike, isLiked }: DefinitionCardProps) {
+  const { user } = useAuth();
+  const [authorName, setAuthorName] = useState<string>('');
+  const isHighlighted = definition.isHighlighted && 
+    (!definition.highlightExpiresAt || new Date(definition.highlightExpiresAt) > new Date());
+  
+  // Check if author is an ID (starts with ObjectId format) or a name string
+  const isAuthorId = /^[0-9a-fA-F]{24}$/.test(definition.author);
+  console.log('User:', user);
+  console.log('User ID:', user?._id);
+  console.log('User ID string:', user?._id?.toString());
+  console.log('Definition author:', definition.author);
+  console.log('Definition author string:', definition.author.toString());
+  console.log('isAuthorId:', isAuthorId);
+
+  // For old definitions (with author name), we'll consider the user as author if they're logged in
+  // and their name matches the author name
+  const isAuthor = isAuthorId 
+    ? user?._id?.toString() === definition.author.toString()
+    : user?.name === definition.author;
+
+  console.log('isAuthor:', isAuthor);
+
+  useEffect(() => {
+    const fetchAuthorName = async () => {
+      if (isAuthorId) {
+        try {
+          const response = await fetch(`/api/user/${definition.author}`);
+          if (response.ok) {
+            const data = await response.json();
+            setAuthorName(data.user.name);
+          }
+        } catch (error) {
+          console.error('Error fetching author name:', error);
+        }
+      } else {
+        setAuthorName(definition.author);
+      }
+    };
+
+    fetchAuthorName();
+  }, [definition.author, isAuthorId]);
+
   return (
     <Card 
       sx={{ 
         mb: 2,
-        borderRadius: 2,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        transition: 'transform 0.2s',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-        }
+        border: isHighlighted ? '2px solid #FFD700' : 'none',
+        boxShadow: isHighlighted ? '0 0 10px rgba(255, 215, 0, 0.3)' : 'none',
       }}
     >
       <CardContent>
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            mb: 2,
-            fontStyle: 'italic',
-            color: 'text.secondary'
-          }}
-        >
-          "{definition.content}"
-        </Typography>
-        
-        <Stack 
-          direction="row" 
-          justifyContent="space-between" 
-          alignItems="center"
-        >
-          <Typography 
-            variant="caption" 
-            color="text.secondary"
-          >
-            Por {definition.author}
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+          <Typography variant="subtitle2" color="text.secondary">
+            {authorName || 'Carregando...'}
           </Typography>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography 
-              variant="caption" 
-              color="text.secondary"
-            >
-              {formatDistanceToNow(new Date(definition.createdAt), {
-                addSuffix: true,
-                locale: ptBR
-              })}
+          <Stack direction="row" spacing={1}>
+            {isHighlighted && (
+              <Chip
+                icon={<Star />}
+                label="Destacada"
+                color="warning"
+                size="small"
+              />
+            )}
+            <Typography variant="caption" color="text.secondary">
+              {formatDistanceToNow(new Date(definition.createdAt), { locale: ptBR, addSuffix: true })}
             </Typography>
-            
-            <IconButton 
-              size="small" 
-              onClick={onLike}
-              color={isLiked ? 'primary' : 'default'}
-            >
-              {isLiked ? <Favorite fontSize="small" /> : <FavoriteBorder fontSize="small" />}
-            </IconButton>
-            
-            <Typography 
-              variant="caption" 
-              color="text.secondary"
-            >
-              {definition.likes}
-            </Typography>
-
-            <FavoriteButton definitionId={definition._id.toString()} />
-          </Box>
+          </Stack>
         </Stack>
+        
+        <Typography variant="body1" paragraph>
+          {definition.content}
+        </Typography>
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <IconButton onClick={onLike} size="small">
+              {isLiked ? <Favorite color="error" /> : <FavoriteBorder />}
+            </IconButton>
+            <Typography variant="caption" color="text.secondary">
+              {definition.likes} curtidas
+            </Typography>
+          </Stack>
+          <Stack direction="row" spacing={1}>
+            {isAuthor && <HighlightButton definitionId={definition._id.toString()} isAuthor={isAuthor} />}
+            <FavoriteButton definitionId={definition._id.toString()} />
+          </Stack>
+        </Box>
       </CardContent>
     </Card>
   );

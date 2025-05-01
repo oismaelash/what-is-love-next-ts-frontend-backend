@@ -10,6 +10,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 export default function DefinitionForm() {
   const [content, setContent] = useState('');
@@ -18,6 +19,7 @@ export default function DefinitionForm() {
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +33,10 @@ export default function DefinitionForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content, author }),
+        body: JSON.stringify({ 
+          content, 
+          author: user ? user._id : author 
+        }),
       });
 
       const data = await response.json();
@@ -86,20 +91,22 @@ export default function DefinitionForm() {
         sx={{ mb: 2 }}
       />
 
-      <TextField
-        fullWidth
-        label="Seu nome"
-        value={author}
-        onChange={(e) => setAuthor(e.target.value)}
-        required
-        sx={{ mb: 2 }}
-      />
+      {!user && (
+        <TextField
+          fullWidth
+          label="Seu nome"
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+          required
+          sx={{ mb: 2 }}
+        />
+      )}
 
       <Button
         type="submit"
         variant="contained"
         color="primary"
-        disabled={isSubmitting || content.length < 10 || content.length > 500 || !author}
+        disabled={isSubmitting || content.length < 10 || content.length > 500 || (!user && !author)}
         sx={{ width: '100%' }}
       >
         {isSubmitting ? <CircularProgress size={24} /> : 'Enviar Definição'}

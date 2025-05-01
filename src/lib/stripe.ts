@@ -1,0 +1,53 @@
+import Stripe from 'stripe';
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('STRIPE_SECRET_KEY is not defined in environment variables');
+}
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2025-04-30.basil',
+  typescript: true,
+});
+
+export const HIGHLIGHT_PRICES = {
+  7: 990, // R$ 9,90
+  14: 1490, // R$ 14,90
+  30: 2490, // R$ 24,90
+} as const;
+
+export type HighlightDuration = keyof typeof HIGHLIGHT_PRICES;
+
+export const createCheckoutSession = async (
+  definitionId: string,
+  durationInDays: HighlightDuration,
+  userId: string
+) => {
+  const price = HIGHLIGHT_PRICES[durationInDays];
+  
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price_data: {
+          currency: 'brl',
+          product_data: {
+            name: `Destaque de Definição por ${durationInDays} dias`,
+            description: `Sua definição será destacada no topo da lista por ${durationInDays} dias`,
+          },
+          unit_amount: price,
+        },
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+    success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/definicoes?highlight=success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/definicoes?highlight=cancelled`,
+    metadata: {
+      definitionId,
+      durationInDays: durationInDays.toString(),
+      userId,
+    },
+  });
+
+  return session;
+}; 
