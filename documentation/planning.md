@@ -33,14 +33,15 @@
    - [X] Implementar validação com OpenAI
 
 2. **Exibição de Definições**
-   - [ ] Criar componente DefinitionCard
-   - [ ] Implementar infinite scroll
-   - [ ] Desenvolver sistema de curtidas
-   - [ ] Implementar contador de definições
+   - [X] Criar componente DefinitionCard
+   - [X] Implementar infinite scroll
+   - [X] Desenvolver sistema de curtidas
+   - [ ] Desenvolver sistema de saber quais definições o usuário já curtiu (usar localStorage e usuario logado)
+   - [X] Implementar contador de definições
 
 ## Prioridade 3: Autenticação e Usuários
 1. **Sistema de Autenticação**
-   - [ ] Implementar NextAuth.js
+   - [ ] Implementar registro de usuário e login com MongoDB
    - [ ] Criar páginas de login/registro
    - [ ] Desenvolver contexto de autenticação
    - [ ] Implementar proteção de rotas
