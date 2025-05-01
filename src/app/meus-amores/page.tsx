@@ -43,7 +43,7 @@ export default function FavoritesPage() {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+      <Container maxWidth="md" sx={{ mt: 4, minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <CircularProgress />
       </Container>
     );
@@ -51,14 +51,14 @@ export default function FavoritesPage() {
 
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Container maxWidth="md" sx={{ mt: 4, minHeight: '60vh', display: 'flex', alignItems: 'center' }}>
         <Typography color="error">{error}</Typography>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
+    <Container maxWidth="md" sx={{ mt: 4, minHeight: '60vh' }}>
       <Typography variant="h4" component="h1" gutterBottom>
         Meus Amores
       </Typography>
