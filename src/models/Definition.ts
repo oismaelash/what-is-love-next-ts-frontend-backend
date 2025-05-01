@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IDefinition extends Document {
+  _id: mongoose.Types.ObjectId;
   content: string;
   author: string;
   likes: number;
