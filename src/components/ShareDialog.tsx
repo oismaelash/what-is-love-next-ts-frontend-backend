@@ -12,7 +12,6 @@ interface ShareDialogProps {
 }
 
 export default function ShareDialog({ open, onClose, definitionId }: ShareDialogProps) {
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const shareUrl = `${window.location.origin}/definition/${definitionId}`;
 
   const handleCopyLink = async () => {
