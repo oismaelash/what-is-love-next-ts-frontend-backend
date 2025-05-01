@@ -13,8 +13,14 @@ RUN npm install --force
 # Copia todo o restante da aplicação
 COPY . .
 
+# Copia o arquivo .env para o build
+COPY .env .env
+
 # Gera o build de produção do Next.js
 RUN npm run build
+
+# Instala apenas dependências de produção (removendo devs)
+RUN npm prune --production --force
 
 # Etapa 2: Cria a imagem de produção minimalista
 FROM node:20-alpine AS runner
@@ -30,6 +36,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/.env .env
 
 # Porta usada pelo Next.js (pode ser configurável)
 EXPOSE 3000
