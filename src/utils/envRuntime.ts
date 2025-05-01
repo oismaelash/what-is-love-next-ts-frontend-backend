@@ -3,12 +3,12 @@ import path from 'path';
 import dotenv from 'dotenv';
 
 export const getRuntimeEnv = () => {
-  const envPath = path.resolve(process.cwd(), '.env.runtime');
+  const envPath = path.resolve(process.cwd(), '.env');
 
   if (fs.existsSync(envPath)) {
     const envConfig = dotenv.parse(fs.readFileSync(envPath));
     return envConfig;
   }
 
-  throw new Error('.env.runtime file not found');
+  throw new Error('.env file not found');
 };
