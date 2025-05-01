@@ -1,5 +1,7 @@
+'use client';
+
 import { Card, CardContent, Typography, Box, IconButton, Stack, Chip } from '@mui/material';
-import { Favorite, FavoriteBorder, Star } from '@mui/icons-material';
+import { Favorite, FavoriteBorder, Star, Share } from '@mui/icons-material';
 import { IDefinition } from '@/models/Definition';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -7,6 +9,7 @@ import FavoriteButton from './FavoriteButton';
 import HighlightButton from './HighlightButton';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
+import ShareDialog from './ShareDialog';
 
 interface DefinitionCardProps {
   definition: IDefinition;
@@ -17,6 +20,7 @@ interface DefinitionCardProps {
 export default function DefinitionCard({ definition, onLike, isLiked }: DefinitionCardProps) {
   const { user } = useAuth();
   const [authorName, setAuthorName] = useState<string>('');
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const isHighlighted = definition.isHighlighted && 
     (!definition.highlightExpiresAt || new Date(definition.highlightExpiresAt) > new Date());
   
@@ -58,52 +62,62 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
   }, [definition.author, isAuthorId]);
 
   return (
-    <Card 
-      sx={{ 
-        mb: 2,
-        border: isHighlighted ? '2px solid #FFD700' : 'none',
-        boxShadow: isHighlighted ? '0 0 10px rgba(255, 215, 0, 0.3)' : 'none',
-      }}
-    >
-      <CardContent>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-          <Typography variant="subtitle2" color="text.secondary">
-            {authorName || 'Carregando...'}
+    <>
+      <Card 
+        sx={{ 
+          mb: 2,
+          border: isHighlighted ? '2px solid #FFD700' : 'none',
+          boxShadow: isHighlighted ? '0 0 10px rgba(255, 215, 0, 0.3)' : 'none',
+        }}
+      >
+        <CardContent>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+            <Typography variant="subtitle2" color="text.secondary">
+              {authorName || 'Carregando...'}
+            </Typography>
+            <Stack direction="row" spacing={1}>
+              {isHighlighted && (
+                <Chip
+                  icon={<Star />}
+                  label="Destacada"
+                  color="warning"
+                  size="small"
+                />
+              )}
+              <Typography variant="caption" color="text.secondary">
+                {formatDistanceToNow(new Date(definition.createdAt), { locale: ptBR, addSuffix: true })}
+              </Typography>
+            </Stack>
+          </Stack>
+          
+          <Typography variant="body1" paragraph>
+            {definition.content}
           </Typography>
-          <Stack direction="row" spacing={1}>
-            {isHighlighted && (
-              <Chip
-                icon={<Star />}
-                label="Destacada"
-                color="warning"
-                size="small"
-              />
-            )}
-            <Typography variant="caption" color="text.secondary">
-              {formatDistanceToNow(new Date(definition.createdAt), { locale: ptBR, addSuffix: true })}
-            </Typography>
-          </Stack>
-        </Stack>
-        
-        <Typography variant="body1" paragraph>
-          {definition.content}
-        </Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <IconButton onClick={onLike} size="small">
-              {isLiked ? <Favorite color="error" /> : <FavoriteBorder />}
-            </IconButton>
-            <Typography variant="caption" color="text.secondary">
-              {definition.likes} curtidas
-            </Typography>
-          </Stack>
-          <Stack direction="row" spacing={1}>
-            {isAuthor && <HighlightButton definitionId={definition._id.toString()} isAuthor={isAuthor} />}
-            <FavoriteButton definitionId={definition._id.toString()} />
-          </Stack>
-        </Box>
-      </CardContent>
-    </Card>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <IconButton onClick={onLike} size="small">
+                {isLiked ? <Favorite color="error" /> : <FavoriteBorder />}
+              </IconButton>
+              <Typography variant="caption" color="text.secondary">
+                {definition.likes} curtidas
+              </Typography>
+            </Stack>
+            <Stack direction="row" spacing={1}>
+              <IconButton onClick={() => setShareDialogOpen(true)} size="small">
+                <Share />
+              </IconButton>
+              {isAuthor && <HighlightButton definitionId={definition._id.toString()} isAuthor={isAuthor} />}
+              <FavoriteButton definitionId={definition._id.toString()} />
+            </Stack>
+          </Box>
+        </CardContent>
+      </Card>
+      <ShareDialog 
+        open={shareDialogOpen} 
+        onClose={() => setShareDialogOpen(false)} 
+        definitionId={definition._id.toString()} 
+      />
+    </>
   );
 } 
