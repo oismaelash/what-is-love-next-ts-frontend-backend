@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Definition from '@/models/Definition';
+import { moderateContent } from '@/lib/openai';
 
 export async function POST(request: Request) {
   try {
@@ -17,6 +18,15 @@ export async function POST(request: Request) {
     if (content.length < 10 || content.length > 500) {
       return NextResponse.json(
         { error: 'A definição deve ter entre 10 e 500 caracteres' },
+        { status: 400 }
+      );
+    }
+
+    // Moderate content using OpenAI
+    const moderationResult = await moderateContent(content);
+    if (!moderationResult.isApproved) {
+      return NextResponse.json(
+        { error: moderationResult.reason || 'Conteúdo não aprovado' },
         { status: 400 }
       );
     }
