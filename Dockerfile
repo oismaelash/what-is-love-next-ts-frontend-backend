@@ -1,35 +1,38 @@
-# Build stage
+# Etapa 1: Instala dependências e gera build
 FROM node:20-alpine AS builder
 
+# Diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copy package files
+# Copia package.json e package-lock.json (ou pnpm/yarn.lock)
 COPY package*.json ./
 
-# Install dependencies
+# Instala dependências
 RUN npm install --force
 
-# Copy the rest of the application
+# Copia todo o restante da aplicação
 COPY . .
 
-# Build the application
+# Gera o build de produção do Next.js
 RUN npm run build
 
-# Production stage
+# Etapa 2: Cria a imagem de produção minimalista
 FROM node:20-alpine AS runner
 
+# Diretório de trabalho
 WORKDIR /app
 
-# Set environment to production
+# Variável de ambiente obrigatória para produção
 ENV NODE_ENV=production
 
-# Copy necessary files from builder
+# Copia apenas o necessário do build
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-# Expose the port the app runs on
+# Porta usada pelo Next.js (pode ser configurável)
 EXPOSE 3000
 
-# Start the application
-CMD ["node", "server.js"] 
+# Comando para iniciar o app
+CMD ["npm", "start"]
