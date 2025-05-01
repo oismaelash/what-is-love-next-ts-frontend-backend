@@ -35,8 +35,8 @@ export const createCheckoutSession = async (
       },
     ],
     mode: 'payment',
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicoes?highlight=success`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicoes?highlight=cancelled`,
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicoes-destaque?highlight=success`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicoes-destaque?highlight=cancelled`,
     metadata: {
       definitionId,
       durationInDays: durationInDays.toString(),

@@ -58,6 +58,7 @@
    - [X] Integrar Woovi para PIX
    - [ ] Implementar webhooks de pagamento
    - [X] Criar página de destaque de definições
+   - [ ] Implementar sistema de adsense
 
 2. **Sistema de E-mails**
    - [ ] Configurar AWS SES

@@ -28,7 +28,7 @@ const Footer = () => {
           }}
         >
           <Typography variant="body2">
-            © {new Date().getFullYear()} O Que é Amor. Todos os direitos reservados.
+            © {new Date().getFullYear()} O Que é Amor. Todos os direitos reservados. INXP
           </Typography>
 
           <Box sx={{ display: 'flex', gap: 1 }}>

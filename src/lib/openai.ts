@@ -11,6 +11,7 @@ export async function moderateContent(content: string): Promise<{
   try {
     const response = await openai.moderations.create({
       input: content,
+      model: process.env.OPENAI_MODEL
     });
 
     const result = response.results[0];

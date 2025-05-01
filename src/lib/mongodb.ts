@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from '@/utils/envRuntime';
 import mongoose from 'mongoose';
 
 declare global {
@@ -8,19 +9,22 @@ declare global {
   };
 }
 
-if (!process.env.MONGODB_URI) {
+const runtimeEnv = getRuntimeEnv();
+const MONGODB_URI = runtimeEnv.MONGODB_URI || process.env.MONGODB_URI || '';
+const MONGODB_DB = runtimeEnv.MONGODB_DB || process.env.MONGODB_DB || '';
+const MONGODB_NAME = runtimeEnv.MONGODB_NAME || process.env.MONGODB_NAME || '';
+
+if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
-if (!process.env.MONGODB_DB) {
+if (!MONGODB_DB) {
   throw new Error('Please define the MONGODB_DB environment variable inside .env');
 }
 
-// Add your desired database name here
-const DB_NAME = process.env.MONGODB_DB; // Change this to your preferred database name
-
-// Append the database name to the connection URI
-const MONGODB_URI = `${process.env.MONGODB_URI}`;
+if (!MONGODB_NAME) {
+  throw new Error('Please define the MONGODB_NAME environment variable inside .env');
+}
 
 let cached = global.mongooseCache;
 
@@ -36,7 +40,7 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      dbName: DB_NAME
+      dbName: MONGODB_NAME
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
