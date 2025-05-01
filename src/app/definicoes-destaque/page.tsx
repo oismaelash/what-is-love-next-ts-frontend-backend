@@ -5,6 +5,7 @@ import { Box, CircularProgress, Typography, Container, Snackbar, Alert } from '@
 import DefinitionCard from '@/components/DefinitionCard';
 import { IDefinition } from '@/models/Definition';
 import { useAuth } from '@/context/AuthContext';
+import AdSense from '@/components/AdSense';
 
 interface ApiResponse {
   definitions: IDefinition[];
@@ -164,6 +165,13 @@ export default function HighlightedDefinitionsPage() {
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ width: '100%', mb: 3 }}>
+              <AdSense 
+                slot="1234567890" // Replace with your actual ad slot ID
+                format="auto"
+                style={{ width: '100%', height: '90px' }}
+              />
+            </Box>
             {definitions.map((definition) => (
               <DefinitionCard
                 key={definition._id.toString()}

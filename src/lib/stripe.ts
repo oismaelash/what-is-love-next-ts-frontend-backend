@@ -1,11 +1,14 @@
 import { HIGHLIGHT_PRICES } from '@/utils/constants';
 import Stripe from 'stripe';
+import { getRuntimeEnv } from '@/utils/envRuntime';
 
-if (!process.env.STRIPE_SECRET_KEY) {
+const runtimeEnv = getRuntimeEnv();
+
+if (!runtimeEnv.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not defined in environment variables');
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+export const stripe = new Stripe(runtimeEnv.STRIPE_SECRET_KEY, {
   apiVersion: '2025-04-30.basil',
   typescript: true,
 });
@@ -35,8 +38,8 @@ export const createCheckoutSession = async (
       },
     ],
     mode: 'payment',
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicoes-destaque?highlight=success`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicoes-destaque?highlight=cancelled`,
+    success_url: `${runtimeEnv.NEXT_PUBLIC_APP_URL}/definicoes-destaque?highlight=success`,
+    cancel_url: `${runtimeEnv.NEXT_PUBLIC_APP_URL}/definicoes-destaque?highlight=cancelled`,
     metadata: {
       definitionId,
       durationInDays: durationInDays.toString(),

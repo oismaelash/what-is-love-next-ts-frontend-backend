@@ -1,14 +1,17 @@
 import { HIGHLIGHT_PRICES } from '@/utils/constants';
 import axios from 'axios';
+import { getRuntimeEnv } from '@/utils/envRuntime';
 
-if (!process.env.WOOVI_API_KEY) {
+const runtimeEnv = getRuntimeEnv();
+
+if (!runtimeEnv.WOOVI_API_KEY) {
   throw new Error('WOOVI_API_KEY is not defined in environment variables');
 }
 
 const wooviApi = axios.create({
   baseURL: 'https://api.openpix.com.br/api/v1',
   headers: {
-    'Authorization': process.env.WOOVI_API_KEY,
+    'Authorization': runtimeEnv.WOOVI_API_KEY,
     'Content-Type': 'application/json',
   },
 });

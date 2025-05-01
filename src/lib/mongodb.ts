@@ -10,8 +10,8 @@ declare global {
 }
 
 const runtimeEnv = getRuntimeEnv();
-const MONGODB_URI = runtimeEnv.MONGODB_URI || process.env.MONGODB_URI || '';
-const MONGODB_DB = runtimeEnv.MONGODB_DB || process.env.MONGODB_DB || '';
+const MONGODB_URI = runtimeEnv.MONGODB_URI || '';
+const MONGODB_DB = runtimeEnv.MONGODB_DB || '';
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
