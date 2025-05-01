@@ -85,7 +85,7 @@
    - [ ] Testes de integração
 
 2. **Deploy e Monitoramento**
-   - [ ] Configurar AWS App Runner
+   - [X] Configurar AWS App Runner
    - [ ] Implementar monitoramento
    - [ ] Configurar backups
    - [ ] Documentar processo de deploy
