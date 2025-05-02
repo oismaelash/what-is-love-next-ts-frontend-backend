@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (event.type === 'checkout.session.completed' || event.type === 'charge.succeeded') {
+    if (event.type === 'checkout.session.completed') {
       // console.log('Event received:', event.type);
       const session = (event.data.object as unknown) as {
         metadata: {
