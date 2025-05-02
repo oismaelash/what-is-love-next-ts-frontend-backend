@@ -2,7 +2,14 @@
 const nextConfig = {
   output: 'standalone',
   images: {
-    domains: ['lh3.googleusercontent.com', 'api.openpix.com.br'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
   async headers() {
     return [
