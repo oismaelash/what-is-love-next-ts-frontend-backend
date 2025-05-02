@@ -11,10 +11,15 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-        py: 3,
+        py: 2,
         px: 2,
         backgroundColor: (theme) => theme.palette.primary.main,
         color: 'white',
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
       }}
     >
       <Container maxWidth="lg">

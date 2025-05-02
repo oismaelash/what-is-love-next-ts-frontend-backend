@@ -56,7 +56,7 @@
 1. **Sistema de Pagamentos**
    - [X] Integrar Stripe para cartões
    - [X] Integrar Woovi para PIX
-   - [ ] Implementar webhooks de pagamento
+   - [X] Implementar webhooks de pagamento
    - [X] Criar página de destaque de definições
    - [ ] Implementar sistema de google adsense
    - [ ] Implementar sistema de google analtyics

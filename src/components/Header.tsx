@@ -68,7 +68,14 @@ const Header = () => {
   );
 
   return (
-    <AppBar position="fixed" color="primary" elevation={0}>
+    <AppBar 
+      position="fixed" 
+      color="primary" 
+      elevation={0}
+      sx={{
+        zIndex: 1100,
+      }}
+    >
       <Toolbar>
         <Typography
           variant="h6"

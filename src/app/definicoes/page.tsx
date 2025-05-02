@@ -145,7 +145,7 @@ export default function DefinitionsPage() {
 
   return (
     <Box sx={{ width: '100%', height: '100%', overflow: 'auto' }}>
-      <Container maxWidth="md" sx={{ py: 4, mt: 10 }}>
+      <Container maxWidth="md" sx={{ py: 4, mt: 10, paddingTop: { xs: '44px', sm: '64px' } }}>
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" component="h1" gutterBottom>
             Definições de Amor

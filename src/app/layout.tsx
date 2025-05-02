@@ -44,7 +44,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
-        style={{ overflow: 'hidden' }}
       >
         <ThemeRegistry>
           <AuthProvider>
@@ -53,8 +52,8 @@ export default function RootLayout({
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
-                  height: '100vh',
-                  overflow: 'hidden',
+                  minHeight: '100vh',
+                  position: 'relative',
                 }}
               >
                 <Header />
@@ -64,10 +63,11 @@ export default function RootLayout({
                     flex: 1,
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
                     width: '100%',
                     overflow: 'auto',
+                    WebkitOverflowScrolling: 'touch',
+                    paddingBottom: '60px',
+                    paddingTop: { xs: '44px', sm: '64px' },
                   }}
                 >
                   {children}
