@@ -7,8 +7,8 @@ import { IDefinition } from '@/models/Definition';
 import { useAuth } from '@/context/AuthContext';
 import { useAnalytics } from '@/hooks/useAnalytics';
 
-type Params = Promise<{ id: string }>
-type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>
+type Params = { id: string }
+type SearchParams = { [key: string]: string | string[] | undefined }
 
 export default function DefinitionPage(props: {
   params: Params
@@ -29,8 +29,7 @@ function DefinitionContent(props: {
   params: Params
   searchParams: SearchParams
 }) {
-    // @ts-expect-error - NEXT 15 BREAKING CHANGE
-    const id = props.params.id
+  const { id } = props.params;
 
   const [definition, setDefinition] = useState<IDefinition | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,6 +45,13 @@ function DefinitionContent(props: {
 
   // Fetch definition
   useEffect(() => {
+    if (!id) {
+      setError('ID não encontrado');
+      return;
+    }
+
+    console.log(id);
+
     const fetchDefinition = async () => {
       try {
         setLoading(true);
@@ -58,6 +64,7 @@ function DefinitionContent(props: {
 
         const data = await response.json();
         setDefinition(data);
+        console.log('Tracking view event for definition:', id);
         trackEvent('VIEW', 'DEFINITION', `Viewed definition ${id}`);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -68,7 +75,7 @@ function DefinitionContent(props: {
     };
 
     fetchDefinition();
-  }, [id, trackEvent]);
+  }, [id]);
 
   // Load liked definitions
   useEffect(() => {
@@ -173,23 +180,38 @@ function DefinitionContent(props: {
   }
 
   return (
-    <Container>
-      <Box sx={{ mt: 4 }}>
-        <DefinitionCard
-          definition={definition}
-          onLike={() => handleLike(definition._id.toString())}
-          isLiked={likedDefinitions.has(definition._id.toString())}
-        />
+    <Box sx={{ width: '100%', height: '100%', overflow: 'auto' }}>
+      <Container maxWidth="md" sx={{ py: 4, mt: 5 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Definição Compartilhada
+        </Typography>
+        <Typography variant="subtitle1" color="text.secondary">
+          Uma definição especial sobre o que é amor
+        </Typography>
       </Box>
+
+      <DefinitionCard
+        definition={definition}
+        onLike={() => handleLike(definition._id.toString())}
+        isLiked={likedDefinitions.has(definition._id.toString())}
+      />
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Container>
+    </Box>
   );
 } 
