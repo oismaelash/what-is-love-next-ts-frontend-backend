@@ -23,7 +23,7 @@ const Footer = () => {
           sx={{
             display: 'flex',
             flexDirection: { xs: 'column', sm: 'row' },
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             alignItems: 'center',
             gap: 2,
           }}
