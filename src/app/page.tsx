@@ -6,7 +6,19 @@ import StarIcon from '@mui/icons-material/Star';
 export default function Home() {
   return (
     <main>
-      <Container sx={{ gap: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <Container
+        // maxWidth="sm"
+        sx={{
+          gap: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          // minHeight: 'calc(100vh - 120px)',
+          minHeight: { xs: 'calc(100vh - 100px)', md: 'calc(100vh - 120px)' },
+          marginTop: { xs: '40px', md: '0px' },
+        }}
+      >
         <Typography variant="h6" align="center" color="text.secondary">
           Compartilhe sua definição de amor e inspire outras pessoas
         </Typography>

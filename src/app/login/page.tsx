@@ -45,7 +45,10 @@ export default function LoginPage() {
   };
 
   return (
-    <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+    <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', 
+      minHeight: { xs: 'calc(100vh - 90px)', md: 'calc(100vh - 120px)' },
+      marginTop: { xs: '30px', md: '0px' },
+    }}>
       <Box
         sx={{
           display: 'flex',
