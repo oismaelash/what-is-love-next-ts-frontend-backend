@@ -44,7 +44,7 @@
    - [X] Implementar registro de usuário e login com MongoDB
    - [X] Criar páginas de login/registro
    - [X] Desenvolver contexto de autenticação
-   - [ ] Implementar proteção de rotas
+   - [X] Implementar proteção de rotas
 
 2. **Funcionalidades de Usuário**
    - [X] Implementar sistema de favoritos (usar localStorage e usuario logado)

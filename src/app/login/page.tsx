@@ -10,7 +10,6 @@ import {
   Button,
   Link,
   Alert,
-  Paper,
   Snackbar
 } from '@mui/material';
 import { useAuth } from '@/context/AuthContext';
@@ -18,7 +17,6 @@ import { useAuth } from '@/context/AuthContext';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
     open: false,
     message: '',
@@ -29,7 +27,6 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     try {
       await login(email, password);

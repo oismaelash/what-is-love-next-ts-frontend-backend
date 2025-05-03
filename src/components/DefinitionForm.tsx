@@ -5,7 +5,6 @@ import {
   Box, 
   TextField, 
   Button, 
-  Typography, 
   Alert,
   CircularProgress,
   Snackbar
@@ -16,8 +15,6 @@ import { useAuth } from '@/context/AuthContext';
 export default function DefinitionForm() {
   const [content, setContent] = useState('');
   const [author, setAuthor] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
@@ -29,8 +26,6 @@ export default function DefinitionForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
     setIsSubmitting(true);
 
     try {
