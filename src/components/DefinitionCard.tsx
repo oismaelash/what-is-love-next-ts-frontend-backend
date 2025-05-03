@@ -10,6 +10,7 @@ import HighlightButton from './HighlightButton';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
 import ShareDialog from './ShareDialog';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface DefinitionCardProps {
   definition: IDefinition;
@@ -21,6 +22,7 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
   const { user } = useAuth();
   const [authorName, setAuthorName] = useState<string>('');
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const { trackEvent } = useAnalytics();
   const isHighlighted = definition.isHighlighted && 
     (!definition.highlightExpiresAt || new Date(definition.highlightExpiresAt) > new Date());
   
@@ -61,6 +63,18 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
     fetchAuthorName();
   }, [definition.author, isAuthorId]);
 
+  const handleLike = () => {
+    if (onLike) {
+      trackEvent('FAVORITE', 'DEFINITION', `Liked definition ${definition._id}`);
+      onLike();
+    }
+  };
+
+  const handleShare = () => {
+    setShareDialogOpen(true);
+    trackEvent('CLICK', 'DEFINITION', `Shared definition ${definition._id}`);
+  };
+
   return (
     <>
       <Card 
@@ -97,7 +111,7 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Stack direction="row" spacing={1} alignItems="center">
-              <IconButton onClick={onLike} size="small">
+              <IconButton onClick={handleLike} size="small">
                 {isLiked ? <Favorite color="error" /> : <FavoriteBorder />}
               </IconButton>
               <Typography variant="caption" color="text.secondary">
@@ -108,11 +122,15 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
               <Typography variant="caption" color="text.secondary">
                 {definition.shares} compartilhamentos
               </Typography>
-              <IconButton onClick={() => setShareDialogOpen(true)} size="small">
+              <IconButton onClick={handleShare} size="small">
                 <Share />
               </IconButton>
               {isAuthor && <HighlightButton definitionId={definition._id.toString()} isAuthor={isAuthor} />}
-              <FavoriteButton definitionId={definition._id.toString()} />
+              <FavoriteButton 
+                definitionId={definition._id.toString()} 
+                onFavorite={() => trackEvent('FAVORITE', 'DEFINITION', `Added to favorites ${definition._id}`)}
+                onUnfavorite={() => trackEvent('FAVORITE', 'DEFINITION', `Removed from favorites ${definition._id}`)}
+              />
             </Stack>
           </Box>
         </CardContent>

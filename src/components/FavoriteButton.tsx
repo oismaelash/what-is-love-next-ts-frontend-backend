@@ -7,9 +7,11 @@ import { useState } from 'react';
 
 interface FavoriteButtonProps {
   definitionId: string;
+  onFavorite?: () => void;
+  onUnfavorite?: () => void;
 }
 
-export default function FavoriteButton({ definitionId }: FavoriteButtonProps) {
+export default function FavoriteButton({ definitionId, onFavorite, onUnfavorite }: FavoriteButtonProps) {
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -18,8 +20,10 @@ export default function FavoriteButton({ definitionId }: FavoriteButtonProps) {
       setIsLoading(true);
       if (isFavorite(definitionId)) {
         await removeFavorite(definitionId);
+        onUnfavorite?.();
       } else {
         await addFavorite(definitionId);
+        onFavorite?.();
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);

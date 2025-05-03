@@ -12,7 +12,6 @@ interface AdSenseProps {
 export default function AdSense({ slot, format = 'auto', style, className }: AdSenseProps) {
   useEffect(() => {
     try {
-      // @ts-expect-error - adsbygoogle is not defined in the global scope
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch (err) {
       console.error('AdSense error:', err);

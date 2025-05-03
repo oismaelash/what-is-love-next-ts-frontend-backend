@@ -35,6 +35,7 @@ jobs:
           echo "STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}" >> .env
           echo "WOOVI_API_KEY=${{ secrets.WOOVI_API_KEY }}" >> .env
           echo "NEXT_PUBLIC_ADSENSE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_ADSENSE_CLIENT_ID }}" >> .env
+          echo "NEXT_PUBLIC_GA_ID=${{ secrets.NEXT_PUBLIC_GA_ID }}" >> .env
           # Add other environment variables as needed
 
       - name: Login to Amazon ECR

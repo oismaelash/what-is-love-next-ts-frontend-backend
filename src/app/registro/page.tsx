@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -10,11 +10,25 @@ import {
   Button,
   Link,
   Alert,
-  Snackbar
+  Snackbar,
+  CircularProgress
 } from '@mui/material';
 import { useAuth } from '@/context/AuthContext';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <Container maxWidth="md" sx={{ mt: 4, minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress />
+      </Container>
+    }>
+      <RegisterContent />
+    </Suspense>
+  );
+}
+
+function RegisterContent() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,11 +40,13 @@ export default function RegisterPage() {
   });
   const router = useRouter();
   const { register } = useAuth();
+  const { trackEvent } = useAnalytics();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
+      trackEvent('REGISTER', 'AUTH', 'Password mismatch', 0);
       setSnackbar({
         open: true,
         message: 'As senhas não coincidem',
@@ -41,8 +57,10 @@ export default function RegisterPage() {
 
     try {
       await register(name, email, password);
+      trackEvent('REGISTER', 'AUTH', 'Registration successful');
       router.push('/');
     } catch (err) {
+      trackEvent('REGISTER', 'AUTH', 'Registration failed', 0);
       setSnackbar({
         open: true,
         message: err instanceof Error ? err.message : 'Erro ao registrar',
@@ -67,7 +85,6 @@ export default function RegisterPage() {
           alignItems: 'center',
         }}
       >
-       
           <Typography component="h1" variant="h4" align="center" gutterBottom>
             Registrar
           </Typography>
@@ -129,20 +146,24 @@ export default function RegisterPage() {
               Registrar
             </Button>
             <Box sx={{ textAlign: 'center' }}>
-              <Link href="/login" variant="body2">
+              <Link 
+                href="/login" 
+                variant="body2"
+                onClick={() => trackEvent('CLICK', 'NAVIGATION', 'Login link')}
+              >
                 Já tem uma conta? Faça login
               </Link>
             </Box>
           </Box>
       </Box>
-
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
       </Snackbar>
     </Container>
   );

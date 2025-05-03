@@ -1,15 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Container, Typography, Box, CircularProgress, Snackbar, Alert } from '@mui/material';
 import DefinitionCard from '@/components/DefinitionCard';
 import { IDefinition } from '@/models/Definition';
 import { useAuth } from '@/context/AuthContext';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 type Params = Promise<{ id: string }>
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>
 
 export default function DefinitionPage(props: {
+  params: Params
+  searchParams: SearchParams
+}) {
+  return (
+    <Suspense fallback={
+      <Container maxWidth="md" sx={{ mt: 4, minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress />
+      </Container>
+    }>
+      <DefinitionContent {...props} />
+    </Suspense>
+  );
+}
+
+function DefinitionContent(props: {
   params: Params
   searchParams: SearchParams
 }) {
@@ -26,6 +42,7 @@ export default function DefinitionPage(props: {
     severity: 'success'
   });
   const { user } = useAuth();
+  const { trackEvent } = useAnalytics();
 
   // Fetch definition
   useEffect(() => {
@@ -41,15 +58,17 @@ export default function DefinitionPage(props: {
 
         const data = await response.json();
         setDefinition(data);
+        trackEvent('VIEW', 'DEFINITION', `Viewed definition ${id}`);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
+        trackEvent('VIEW', 'DEFINITION', `Failed to view definition ${id}`, 0);
       } finally {
         setLoading(false);
       }
     };
 
     fetchDefinition();
-  }, [id]);
+  }, [id, trackEvent]);
 
   // Load liked definitions
   useEffect(() => {
@@ -87,6 +106,7 @@ export default function DefinitionPage(props: {
           message: 'Você já curtiu esta definição',
           severity: 'info'
         });
+        trackEvent('FAVORITE', 'DEFINITION', `Already liked definition ${definitionId}`);
         return;
       }
 
@@ -99,32 +119,22 @@ export default function DefinitionPage(props: {
         credentials: 'include',
       });
 
-      if (!response.ok) {
+      if (response.ok) {
+        setLikedDefinitions(prev => new Set([...prev, definitionId]));
+        trackEvent('FAVORITE', 'DEFINITION', `Liked definition ${definitionId}`);
+        setSnackbar({
+          open: true,
+          message: 'Definição curtida com sucesso!',
+          severity: 'success'
+        });
+      } else {
         throw new Error('Failed to like definition');
       }
-
-      const updatedDefinition = await response.json();
-      setDefinition(updatedDefinition);
-
-      // Add to liked definitions
-      const newLikedDefinitions = new Set(likedDefinitions).add(definitionId);
-      setLikedDefinitions(newLikedDefinitions);
-
-      // For non-logged-in users, save to localStorage
-      if (!user) {
-        localStorage.setItem('likedDefinitions', JSON.stringify(Array.from(newLikedDefinitions)));
-      }
-
-      setSnackbar({
-        open: true,
-        message: 'Definição curtida com sucesso!',
-        severity: 'success'
-      });
     } catch (err) {
-      console.error('Error liking definition:', err);
+      trackEvent('FAVORITE', 'DEFINITION', `Failed to like definition ${definitionId}`, 0);
       setSnackbar({
         open: true,
-        message: 'Erro ao curtir definição',
+        message: err instanceof Error ? err.message : 'Erro ao curtir a definição',
         severity: 'error'
       });
     }
@@ -136,58 +146,50 @@ export default function DefinitionPage(props: {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+      <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
         <CircularProgress />
       </Container>
     );
   }
 
-  if (error || !definition) {
+  if (error) {
     return (
-      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Definição Não Encontrada
+      <Container>
+        <Typography color="error" align="center">
+          {error}
         </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph>
-          A definição que você está procurando não existe ou foi removida.
+      </Container>
+    );
+  }
+
+  if (!definition) {
+    return (
+      <Container>
+        <Typography align="center">
+          Definição não encontrada
         </Typography>
       </Container>
     );
   }
 
   return (
-    <Box sx={{ width: '100%', height: '100%', overflow: 'auto' }}>
-      <Container maxWidth="md" sx={{ py: 4, mt: 5 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Definição Compartilhada
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          Uma definição especial sobre o que é amor
-        </Typography>
+    <Container>
+      <Box sx={{ mt: 4 }}>
+        <DefinitionCard
+          definition={definition}
+          onLike={() => handleLike(definition._id.toString())}
+          isLiked={likedDefinitions.has(definition._id.toString())}
+        />
       </Box>
-
-      <DefinitionCard
-        definition={definition}
-        onLike={() => handleLike(definition._id.toString())}
-        isLiked={likedDefinitions.has(definition._id.toString())}
-      />
-
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Container>
-    </Box>
   );
 } 

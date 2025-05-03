@@ -3,6 +3,7 @@ import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Typography, 
 import { Star, CreditCard, QrCode } from '@mui/icons-material';
 import Image from 'next/image';
 import { HIGHLIGHT_PRICES } from '@/utils/constants';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface HighlightButtonProps {
   definitionId: string;
@@ -71,6 +72,7 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
   } | null>(null);
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  const { trackEvent } = useAnalytics();
 
   const checkPaymentStatus = async () => {
     if (!pixData) return;
@@ -81,6 +83,7 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
       const data = await response.json();
 
       if (data.paid) {
+        trackEvent('SUCCESS', 'PAYMENT', `PIX payment successful for definition ${definitionId}`);
         // Payment was successful, close the dialog and refresh the page
         setOpen(false);
         setShowPaymentSelection(false);
@@ -92,6 +95,7 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
       }
     } catch (_err) {
       setError('Erro ao verificar status do pagamento');
+      trackEvent('ERROR', 'PAYMENT', `Error checking PIX payment status for definition ${definitionId}`);
       console.error('Erro ao verificar status do pagamento:', _err);
     } finally {
       setIsCheckingPayment(false);
@@ -102,6 +106,9 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
     try {
       setIsLoading(true);
       setError('');
+      setSelectedDuration(durationInDays);
+
+      trackEvent('START', 'HIGHLIGHT', `Started highlight process for definition ${definitionId} with ${durationInDays} days`);
 
       const checkoutResponse = await fetch('/api/payment/create-checkout', {
         method: 'POST',
@@ -122,12 +129,15 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
       }
 
       if (paymentMethod === 'stripe') {
+        trackEvent('REDIRECT', 'PAYMENT', `Redirecting to Stripe checkout for definition ${definitionId}`);
         window.location.href = checkoutData.checkoutUrl;
       } else if (paymentMethod === 'woovi') {
+        trackEvent('PIX', 'PAYMENT', `Generated PIX payment for definition ${definitionId}`);
         setPixData(checkoutData);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao destacar definição');
+      trackEvent('ERROR', 'HIGHLIGHT', `Error highlighting definition ${definitionId}: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -143,7 +153,10 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
         variant="outlined"
         color="secondary"
         startIcon={<Star sx={{ color: '#ff4081' }} />}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          trackEvent('OPEN_DIALOG', 'HIGHLIGHT', `Opened highlight dialog for definition ${definitionId}`);
+        }}
         size="small"
         sx={{
           borderColor: 'pink',
@@ -163,6 +176,7 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
           setShowPaymentSelection(false);
           setSelectedDuration(null);
           setPixData(null);
+          trackEvent('CLOSE_DIALOG', 'HIGHLIGHT', `Closed highlight dialog for definition ${definitionId}`);
         }}
         PaperProps={{
           sx: {

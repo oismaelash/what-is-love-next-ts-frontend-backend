@@ -1,16 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Box, CircularProgress, Typography, Container, Snackbar, Alert } from '@mui/material';
 import DefinitionCard from '@/components/DefinitionCard';
 import { IDefinition } from '@/models/Definition';
 import { useAuth } from '@/context/AuthContext';
+import { useSearchParams } from 'next/navigation';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface ApiResponse {
   definitions: IDefinition[];
 }
 
 export default function HighlightedDefinitionsPage() {
+  return (
+    <Suspense fallback={
+      <Container maxWidth="md" sx={{ mt: 4, minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress />
+      </Container>
+    }>
+      <HighlightedDefinitionsContent />
+    </Suspense>
+  );
+}
+
+function HighlightedDefinitionsContent() {
   const [definitions, setDefinitions] = useState<IDefinition[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +35,30 @@ export default function HighlightedDefinitionsPage() {
     severity: 'success'
   });
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const { trackEvent } = useAnalytics();
+
+  // Check for payment return status
+  useEffect(() => {
+    if (!searchParams) return;
+    
+    const highlightStatus = searchParams.get('highlight');
+    if (highlightStatus === 'success') {
+      trackEvent('SUCCESS', 'PAYMENT', 'Stripe payment successful');
+      setSnackbar({
+        open: true,
+        message: 'Pagamento realizado com sucesso! Sua definição foi destacada.',
+        severity: 'success'
+      });
+    } else if (highlightStatus === 'cancelled') {
+      trackEvent('ERROR', 'PAYMENT', 'Stripe payment cancelled by user');
+      setSnackbar({
+        open: true,
+        message: 'Pagamento cancelado. Você pode tentar novamente quando quiser.',
+        severity: 'info'
+      });
+    }
+  }, [searchParams, trackEvent]);
 
   // Fetch highlighted definitions
   useEffect(() => {
