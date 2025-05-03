@@ -1,4 +1,3 @@
-/* eslint-disable */
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
@@ -8,13 +7,13 @@ import { IDefinition } from '@/models/Definition';
 import { useAuth } from '@/context/AuthContext';
 import { useAnalytics } from '@/hooks/useAnalytics';
 
-type Params = { id: string }
-type SearchParams = { [key: string]: string | string[] | undefined }
+interface PageProps {
+  params: Promise<{
+    id: string;
+  }>
+}
 
-export default function DefinitionPage(props: {
-  params: Params
-  searchParams: SearchParams
-}) {
+export default function DefinitionPage(props: PageProps) {
   return (
     <Suspense fallback={
       <Container maxWidth="md" sx={{ mt: 4, minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -26,11 +25,7 @@ export default function DefinitionPage(props: {
   );
 }
 
-function DefinitionContent(props: {
-  params: Params
-  searchParams: SearchParams
-}) {
-  const { id } = props.params;
+function DefinitionContent(props: PageProps) {
 
   const [definition, setDefinition] = useState<IDefinition | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,14 +41,10 @@ function DefinitionContent(props: {
 
   // Fetch definition
   useEffect(() => {
-    if (!id) {
-      setError('ID não encontrado');
-      return;
-    }
-
-    console.log(id);
-
     const fetchDefinition = async () => {
+      const { id } = await props.params;
+      console.log(id);
+
       try {
         setLoading(true);
         setError(null);
@@ -76,7 +67,7 @@ function DefinitionContent(props: {
     };
 
     fetchDefinition();
-  }, [id]);
+  }, [props.params]);
 
   // Load liked definitions
   useEffect(() => {
