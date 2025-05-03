@@ -67,7 +67,7 @@ export default function RootLayout({
                     overflow: 'auto',
                     WebkitOverflowScrolling: 'touch',
                     paddingBottom: '60px',
-                    paddingTop: { xs: '44px', sm: '64px' },
+                    // paddingTop: { xs: '44px', sm: '64px' },
                   }}
                 >
                   {children}

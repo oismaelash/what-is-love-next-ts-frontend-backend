@@ -68,6 +68,7 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
           mb: 2,
           border: isHighlighted ? '2px solid #FFD700' : 'none',
           boxShadow: isHighlighted ? '0 0 10px rgba(255, 215, 0, 0.3)' : 'none',
+          width: '100%',
         }}
       >
         <CardContent>

@@ -11,6 +11,7 @@ import {
   Link,
   Alert,
   Paper,
+  Snackbar
 } from '@mui/material';
 import { useAuth } from '@/context/AuthContext';
 
@@ -18,6 +19,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
   const router = useRouter();
   const { login } = useAuth();
 
@@ -29,37 +35,31 @@ export default function LoginPage() {
       await login(email, password);
       router.push('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao fazer login');
+      setSnackbar({
+        open: true,
+        message: err instanceof Error ? err.message : 'Erro ao fazer login',
+        severity: 'error'
+      });
     }
   };
 
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
   return (
-    <Container maxWidth="sm">
+    <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
       <Box
         sx={{
-          marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        <Paper
-          elevation={3}
-          sx={{
-            padding: 4,
-            width: '100%',
-            borderRadius: 2,
-          }}
-        >
           <Typography component="h1" variant="h4" align="center" gutterBottom>
             Login
           </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
 
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
@@ -99,9 +99,17 @@ export default function LoginPage() {
                 Não tem uma conta? Registre-se
               </Link>
             </Box>
-          </Box>
-        </Paper>
+        </Box>
       </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+      </Snackbar>
     </Container>
   );
 } 

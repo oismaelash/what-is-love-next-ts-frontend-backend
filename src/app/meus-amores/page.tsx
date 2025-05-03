@@ -58,25 +58,30 @@ export default function FavoritesPage() {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, minHeight: '60vh' }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Meus Amores
-      </Typography>
-
-      {favoriteDefinitions.length === 0 ? (
-        <Typography variant="body1" color="text.secondary">
-          Você ainda não tem nenhuma definição favorita.
+    <Box sx={{ width: '100%', height: '100%', overflow: 'auto' }}>
+      <Container maxWidth="md" sx={{ py: 4, mt: 5 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Meus Amores
         </Typography>
-      ) : (
-        <Box>
-          {favoriteDefinitions.map((definition) => (
-            <DefinitionCard
-              key={definition._id.toString()}
-              definition={definition}
-            />
-          ))}
-        </Box>
-      )}
-    </Container>
+
+        {favoriteDefinitions.length === 0 ? (
+          <Typography variant="body1" color="text.secondary">
+            Você ainda não tem nenhuma definição favorita.
+          </Typography>
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, justifyContent: 'center', alignItems: 'center' }}>
+            {favoriteDefinitions.map((definition) => (
+              <DefinitionCard
+                key={definition._id.toString()}
+                definition={definition}
+              />
+            ))}
+            <Typography variant="body1" color="text.secondary">
+              Você chegou ao fim das definições
+            </Typography>
+          </Box>
+        )}
+      </Container>
+    </Box>
   );
 } 

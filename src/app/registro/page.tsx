@@ -10,7 +10,7 @@ import {
   Button,
   Link,
   Alert,
-  Paper,
+  Snackbar
 } from '@mui/material';
 import { useAuth } from '@/context/AuthContext';
 
@@ -20,6 +20,11 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
   const router = useRouter();
   const { register } = useAuth();
 
@@ -28,7 +33,11 @@ export default function RegisterPage() {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('As senhas não coincidem');
+      setSnackbar({
+        open: true,
+        message: 'As senhas não coincidem',
+        severity: 'error'
+      });
       return;
     }
 
@@ -36,37 +45,31 @@ export default function RegisterPage() {
       await register(name, email, password);
       router.push('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao registrar');
+      setSnackbar({
+        open: true,
+        message: err instanceof Error ? err.message : 'Erro ao registrar',
+        severity: 'error'
+      });
     }
   };
 
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
   return (
-    <Container maxWidth="sm">
+    <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
       <Box
         sx={{
-          marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
         }}
       >
-        <Paper
-          elevation={3}
-          sx={{
-            padding: 4,
-            width: '100%',
-            borderRadius: 2,
-          }}
-        >
+       
           <Typography component="h1" variant="h4" align="center" gutterBottom>
             Registrar
           </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
 
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
@@ -130,8 +133,16 @@ export default function RegisterPage() {
               </Link>
             </Box>
           </Box>
-        </Paper>
       </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+      </Snackbar>
     </Container>
   );
 } 

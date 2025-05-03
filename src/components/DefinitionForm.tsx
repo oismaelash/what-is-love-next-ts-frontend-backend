@@ -7,7 +7,8 @@ import {
   Button, 
   Typography, 
   Alert,
-  CircularProgress
+  CircularProgress,
+  Snackbar
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -20,6 +21,11 @@ export default function DefinitionForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,35 +51,31 @@ export default function DefinitionForm() {
         throw new Error(data.error || 'Erro ao enviar definição');
       }
 
-      setSuccess('Definição enviada com sucesso!');
+      setSnackbar({
+        open: true,
+        message: 'Definição enviada com sucesso!',
+        severity: 'success'
+      });
       setContent('');
       setAuthor('');
       router.refresh(); // Refresh the page to show new definition
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao enviar definição');
+      setSnackbar({
+        open: true,
+        message: err instanceof Error ? err.message : 'Erro ao enviar definição',
+        severity: 'error'
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 600, mx: 'auto', p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Compartilhe sua definição de amor
-      </Typography>
-      
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-      
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          {success}
-        </Alert>
-      )}
-
       <TextField
         fullWidth
         multiline
@@ -111,6 +113,21 @@ export default function DefinitionForm() {
       >
         {isSubmitting ? <CircularProgress size={24} /> : 'Enviar Definição'}
       </Button>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 } 

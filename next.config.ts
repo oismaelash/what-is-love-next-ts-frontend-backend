@@ -5,8 +5,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*',
-        port: '',
+        hostname: 'api.openpix.com.br',
         pathname: '/**',
       },
     ],

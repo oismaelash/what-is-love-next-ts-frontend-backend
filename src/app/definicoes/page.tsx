@@ -28,7 +28,7 @@ export default function DefinitionsPage() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const response = await fetch('/api/definitions');
         const data = await response.json() as ApiResponse;
 
@@ -52,13 +52,13 @@ export default function DefinitionsPage() {
   useEffect(() => {
     const loadLikedDefinitions = async () => {
       console.log('Loading liked definitions for user:', user?._id);
-      
+
       if (user) {
         try {
           const response = await fetch('/api/user/liked-definitions', {
             credentials: 'include',
           });
-          
+
           if (response.ok) {
             const data = await response.json();
             console.log('Liked definitions from DB:', data.likedDefinitions);
@@ -108,9 +108,9 @@ export default function DefinitionsPage() {
 
       const updatedDefinition = await response.json();
       console.log('Definition liked:', updatedDefinition._id);
-      
+
       // Update the definition in the list
-      setDefinitions(definitions.map(def => 
+      setDefinitions(definitions.map(def =>
         def._id.toString() === definitionId ? updatedDefinition : def
       ));
 
@@ -143,27 +143,34 @@ export default function DefinitionsPage() {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4, minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4, minHeight: '60vh', display: 'flex', alignItems: 'center' }}>
+        <Typography color="error">{error}</Typography>
+      </Container>
+    );
+  }
+
   return (
     <Box sx={{ width: '100%', height: '100%', overflow: 'auto' }}>
-      <Container maxWidth="md" sx={{ py: 4, mt: 10, paddingTop: { xs: '44px', sm: '64px' } }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Definições de Amor
+      <Container maxWidth="md" sx={{ py: 4, mt: 5 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Definições de Amor
+        </Typography>
+        {definitions.length === 0 ? (
+          <Typography variant="body1" color="text.secondary">
+            Nenhuma definição encontrada
           </Typography>
-
-          {error && (
-            <Typography color="error" sx={{ mb: 2 }}>
-              {error}
-            </Typography>
-          )}
-        </Box>
-
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-            <CircularProgress />
-          </Box>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, justifyContent: 'center', alignItems: 'center' }}>
             {definitions.map((definition) => (
               <DefinitionCard
                 key={definition._id.toString()}
@@ -172,28 +179,10 @@ export default function DefinitionsPage() {
                 isLiked={likedDefinitions.has(definition._id.toString())}
               />
             ))}
-            {definitions.length > 0 && (
-              <Typography 
-                variant="body2" 
-                color="text.secondary" 
-                align="center"
-                sx={{ my: 4 }}
-              >
-                Você chegou ao fim das definições
-              </Typography>
-            )}
+            <Typography variant="body1" color="text.secondary">
+              Você chegou ao fim das definições
+            </Typography>
           </Box>
-        )}
-
-        {!loading && definitions.length === 0 && (
-          <Typography 
-            variant="body2" 
-            color="text.secondary" 
-            align="center"
-            sx={{ my: 4 }}
-          >
-            Nenhuma definição encontrada
-          </Typography>
         )}
       </Container>
 
@@ -201,6 +190,7 @@ export default function DefinitionsPage() {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           onClose={handleCloseSnackbar}

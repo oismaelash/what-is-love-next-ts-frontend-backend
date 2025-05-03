@@ -198,42 +198,7 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
                 height={200}
                 style={{ maxWidth: '200px', width: '100%' }}
               />
-              <Box sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                gap: 1,
-                width: '100%',
-                maxWidth: '300px',
-                p: 2,
-                bgcolor: 'rgba(0, 0, 0, 0.02)',
-                borderRadius: 1,
-                position: 'relative'
-              }}>
-                <Typography variant="caption" sx={{ color: '#666' }}>
-                  Ou copie a chave PIX (Clique para copiar):
-                </Typography>
-                <Typography 
-                  sx={{ 
-                    wordBreak: 'break-all',
-                    textAlign: 'center',
-                    fontFamily: 'monospace',
-                    fontSize: '0.8rem',
-                    color: '#333',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      color: '#ff4081'
-                    }
-                  }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(pixData.pixKey);
-                    setShowCopiedMessage(true);
-                    setTimeout(() => setShowCopiedMessage(false), 2000);
-                  }}
-                >
-                  {pixData.pixKey}
-                </Typography>
-                {showCopiedMessage && (
+              {showCopiedMessage && (
                   <Box
                     sx={{
                       position: 'absolute',
@@ -252,7 +217,22 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
                     Chave PIX copiada!
                   </Box>
                 )}
-              </Box>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  navigator.clipboard.writeText(pixData.pixKey);
+                  setShowCopiedMessage(true);
+                  setTimeout(() => setShowCopiedMessage(false), 2000);
+                }}                
+                sx={{
+                  backgroundColor: '#ff4081',
+                  '&:hover': {
+                    backgroundColor: '#f50057',
+                  }
+                }}
+              >
+                Copiar Chave PIX
+              </Button>
               <Button
                 variant="contained"
                 onClick={checkPaymentStatus}
