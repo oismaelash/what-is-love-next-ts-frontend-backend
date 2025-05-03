@@ -3,6 +3,7 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography } from '@mui/material';
 import { Share, Download } from '@mui/icons-material';
 import {QRCodeCanvas} from 'qrcode.react';
+import { useState } from 'react';
 
 interface ShareDialogProps {
   open: boolean;
@@ -11,14 +12,28 @@ interface ShareDialogProps {
 }
 
 export default function ShareDialog({ open, onClose, definitionId }: ShareDialogProps) {
+  const [isCopying, setIsCopying] = useState(false);
   const shareUrl = `${window.location.origin}/definicao/${definitionId}`;
 
   const handleCopyLink = async () => {
     try {
+      setIsCopying(true);
       await navigator.clipboard.writeText(shareUrl);
+      
+      // Increment share count
+      await fetch('/api/definitions/share', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ definitionId }),
+      });
+
       alert('Link copiado para a área de transferência!');
     } catch (err) {
       console.error('Failed to copy link:', err);
+    } finally {
+      setIsCopying(false);
     }
   };
 
@@ -53,8 +68,8 @@ export default function ShareDialog({ open, onClose, definitionId }: ShareDialog
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCopyLink} startIcon={<Share />}>
-          Copiar Link
+        <Button onClick={handleCopyLink} startIcon={<Share />} disabled={isCopying}>
+          {isCopying ? 'Copiando...' : 'Copiar Link'}
         </Button>
         <Button onClick={handleDownloadQRCode} startIcon={<Download />}>
           Baixar QR Code

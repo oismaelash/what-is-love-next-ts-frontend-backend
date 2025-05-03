@@ -5,6 +5,7 @@ export interface IDefinition extends Document {
   content: string;
   author: string;
   likes: number;
+  shares: number;
   isHighlighted: boolean;
   highlightExpiresAt?: Date;
   createdAt: Date;
@@ -25,6 +26,10 @@ const DefinitionSchema: Schema = new Schema({
     trim: true,
   },
   likes: {
+    type: Number,
+    default: 0,
+  },
+  shares: {
     type: Number,
     default: 0,
   },

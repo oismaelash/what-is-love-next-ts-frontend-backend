@@ -104,7 +104,10 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
                 {definition.likes} curtidas
               </Typography>
             </Stack>
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="caption" color="text.secondary">
+                {definition.shares} compartilhamentos
+              </Typography>
               <IconButton onClick={() => setShareDialogOpen(true)} size="small">
                 <Share />
               </IconButton>

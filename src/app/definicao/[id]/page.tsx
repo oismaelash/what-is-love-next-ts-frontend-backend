@@ -156,7 +156,8 @@ export default function DefinitionPage(props: {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Box sx={{ width: '100%', height: '100%', overflow: 'auto' }}>
+      <Container maxWidth="md" sx={{ py: 4, mt: 5 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Definição Compartilhada
@@ -187,5 +188,6 @@ export default function DefinitionPage(props: {
         </Alert>
       </Snackbar>
     </Container>
+    </Box>
   );
 } 
