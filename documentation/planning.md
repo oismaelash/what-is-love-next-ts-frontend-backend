@@ -59,7 +59,7 @@
    - [X] Implementar webhooks de pagamento
    - [X] Criar página de destaque de definições
    - [ ] Implementar sistema de google adsense
-   - [ ] Implementar sistema de google analtyics
+   - [X] Implementar sistema de google analtyics
 
 2. **Sistema de E-mails**
    - [ ] Configurar AWS SES

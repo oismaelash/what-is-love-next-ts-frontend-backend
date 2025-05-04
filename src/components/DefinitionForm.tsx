@@ -118,7 +118,7 @@ export default function DefinitionForm() {
         <Alert
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          sx={{ width: '100%', zIndex: 10000 }}
         >
           {snackbar.message}
         </Alert>

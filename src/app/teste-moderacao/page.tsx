@@ -82,7 +82,7 @@ export default function TestModeratePage() {
       </Paper>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2, zIndex: 10000 }}>
           {error}
         </Alert>
       )}

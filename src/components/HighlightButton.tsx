@@ -195,7 +195,7 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
         
         <DialogContent>
           {error && (
-            <Alert severity="error" sx={{ mb: 2, mt: 2 }}>
+            <Alert severity="error" sx={{ mb: 2, mt: 2, zIndex: 10000 }}>
               {error}
             </Alert>
           )}

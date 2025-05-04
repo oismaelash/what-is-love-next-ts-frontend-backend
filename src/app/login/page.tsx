@@ -137,7 +137,7 @@ function LoginContent() {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%', zIndex: 10000 }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
