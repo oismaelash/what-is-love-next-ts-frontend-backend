@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Container, Typography, Box, CircularProgress, Snackbar, Alert, Grid, Card, CardMedia, IconButton, CardActions } from '@mui/material';
+import { Container, Typography, Box, CircularProgress, Snackbar, Alert, Grid, Card, CardMedia, IconButton, CardActions, Paper } from '@mui/material';
 import DefinitionCard from '@/components/DefinitionCard';
 import { IDefinition } from '@/models/Definition';
 import { useAuth } from '@/context/AuthContext';
@@ -9,6 +9,7 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 import GenerateImageButton from '@/components/GenerateImageButton';
 import { useSearchParams } from 'next/navigation';
 import DownloadIcon from '@mui/icons-material/Download';
+import { AutoAwesome } from '@mui/icons-material';
 
 interface PageProps {
   params: Promise<{
@@ -294,6 +295,34 @@ function DefinitionContent(props: PageProps) {
           onLike={() => handleLike(definition._id.toString())}
           isLiked={likedDefinitions.has(definition._id.toString())}
         />
+
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            p: 3, 
+            mb: 3, 
+            mt: 4,
+            width: '100%',
+            maxWidth: '600px',
+            backgroundColor: '#fff5f7',
+            borderRadius: 2,
+            border: '1px solid #ff4081',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <AutoAwesome sx={{ color: '#ff4081' }} />
+            <Typography variant="h5" sx={{ color: '#ff4081' }}>
+              Transforme sua definição em arte
+            </Typography>
+          </Box>
+          <Typography variant="body1" sx={{ color: '#666', mb: 2 }}>
+            Gere uma imagem única e personalizada baseada na sua definição de amor. 
+            Uma forma especial de eternizar seu sentimento em arte.
+          </Typography>
+          {/* <Typography variant="body2" sx={{ color: '#ff4081', fontWeight: 'bold' }}>
+            Aproveite sua primeira geração gratuita ou gere mais por apenas R$ 1,00
+          </Typography> */}
+        </Paper>
 
         <GenerateImageButton
           definitionId={definition._id.toString()}

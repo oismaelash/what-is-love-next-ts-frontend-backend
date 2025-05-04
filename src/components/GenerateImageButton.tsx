@@ -109,7 +109,7 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                 },
                 body: JSON.stringify({ 
                     definitionId, 
-                    durationInDays: 1, // Using 1 day as a placeholder since we're not highlighting
+                    durationInDays: 1,
                     paymentMethod,
                     isImageGeneration: true
                 }),
