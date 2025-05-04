@@ -7,22 +7,26 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import FavoriteButton from './FavoriteButton';
 import HighlightButton from './HighlightButton';
+import DeleteButton from './DeleteButton';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
 import ShareDialog from './ShareDialog';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useRouter } from 'next/navigation';
 
 interface DefinitionCardProps {
   definition: IDefinition;
   onLike?: () => void;
   isLiked?: boolean;
+  onDelete?: () => void;
 }
 
-export default function DefinitionCard({ definition, onLike, isLiked }: DefinitionCardProps) {
+export default function DefinitionCard({ definition, onLike, isLiked, onDelete }: DefinitionCardProps) {
   const { user } = useAuth();
   const [authorName, setAuthorName] = useState<string>('');
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const { trackEvent } = useAnalytics();
+  const router = useRouter();
   const isHighlighted = definition.isHighlighted &&
     (!definition.highlightExpiresAt || new Date(definition.highlightExpiresAt) > new Date());
 
@@ -73,6 +77,31 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
   const handleShare = () => {
     setShareDialogOpen(true);
     trackEvent('CLICK', 'DEFINITION', `Shared definition ${definition._id}`);
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('Tem certeza que deseja deletar esta definição?')) {
+      try {
+        const response = await fetch(`/api/definitions/${definition._id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          trackEvent('DELETE', 'DEFINITION', `Deleted definition ${definition._id}`);
+          if (onDelete) {
+            onDelete();
+          } else {
+            router.refresh();
+          }
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Erro ao deletar definição');
+        }
+      } catch (error) {
+        console.error('Error deleting definition:', error);
+        alert('Erro ao deletar definição');
+      }
+    }
   };
 
   return (
@@ -132,8 +161,16 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
               />
             </Stack>
           </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 1 }}>
-            {isAuthor && <HighlightButton definitionId={definition._id.toString()} isAuthor={isAuthor} />}
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 1, gap: 1 }}>
+            {isAuthor && (
+              <>
+                <HighlightButton definitionId={definition._id.toString()} isAuthor={isAuthor} />
+                <DeleteButton
+                  definitionId={definition._id.toString()}
+                  onDelete={onDelete}
+                />
+              </>
+            )}
           </Box>
         </CardContent>
       </Card>
