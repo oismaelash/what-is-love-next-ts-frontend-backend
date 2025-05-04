@@ -232,7 +232,7 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                     onClick={() => setOpen(true)}
                     disabled={loading || isLoading}
                 >
-                    {loading || isLoading ? <CircularProgress size={24} /> : 'Gerar Imagem (R$ 0,90)'}
+                    {loading || isLoading ? <CircularProgress size={24} /> : 'Gerar Imagem (R$ 1,00)'}
                 </Button>
             )}
 
@@ -415,7 +415,7 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                                     }
                                 }}
                             >
-                                {loading ? <CircularProgress size={24} color="inherit" /> : 'Pagar R$ 2,00'}
+                                {loading ? <CircularProgress size={24} color="inherit" /> : 'Pagar R$ 1,00'}
                             </Button>
                         </>
                     )}

@@ -5,5 +5,5 @@ export const HIGHLIGHT_PRICES = {
   30: 2990, // R$ 29,90
 };
 
-export const IMAGE_GENERATION_PRICE = 0.90; // R$ 0,90
+export const IMAGE_GENERATION_PRICE = 100; // R$ 1,00
 
