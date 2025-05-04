@@ -9,18 +9,28 @@ export async function moderateContent(content: string): Promise<{
   reason?: string;
 }> {
   try {
-    const response = await openai.moderations.create({
-      input: content,
-      model: process.env.OPENAI_MODEL!
+    const response = await openai.chat.completions.create({
+      model: process.env.OPENAI_MODEL!,
+      messages: [
+        {
+          role: "system",
+          content: "You are a content moderator. Analyze the following content and determine if it is appropriate for the theme: what is love. Respond with 'APPROVED' if appropriate, or 'REJECTED' followed by a reason if inappropriate."
+        },
+        {
+          role: "user",
+          content: content
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 50
     });
 
-    const result = response.results[0];
+    const result = response.choices[0].message.content;
     
-    // Check if the content is flagged for any category
-    if (result.flagged) {
+    if (result?.startsWith('REJECTED')) {
       return {
         isApproved: false,
-        reason: 'O conteúdo contém material inapropriado ou ofensivo.',
+        reason: result.replace('REJECTED', '').trim() || 'O conteúdo contém material inapropriado ou ofensivo.',
       };
     }
 
