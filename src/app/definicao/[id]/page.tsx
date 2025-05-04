@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Container, Typography, Box, CircularProgress, Snackbar, Alert, Grid, Card, CardMedia } from '@mui/material';
+import { Container, Typography, Box, CircularProgress, Snackbar, Alert, Grid, Card, CardMedia, IconButton, CardActions } from '@mui/material';
 import DefinitionCard from '@/components/DefinitionCard';
 import { IDefinition } from '@/models/Definition';
 import { useAuth } from '@/context/AuthContext';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import GenerateImageButton from '@/components/GenerateImageButton';
 import { useSearchParams } from 'next/navigation';
+import DownloadIcon from '@mui/icons-material/Download';
 
 interface PageProps {
   params: Promise<{
@@ -311,6 +312,22 @@ function DefinitionContent(props: PageProps) {
                       alt={`Imagem gerada ${index + 1}`}
                       sx={{ height: 200, objectFit: 'cover' }}
                     />
+                    <CardActions sx={{ justifyContent: 'center' }}>
+                      <IconButton 
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = imageUrl;
+                          link.download = `imagem-amor-${index + 1}.jpg`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                        color="primary"
+                        aria-label="download image"
+                      >
+                        <DownloadIcon />
+                      </IconButton>
+                    </CardActions>
                   </Card>
                 </Box>
               ))}
