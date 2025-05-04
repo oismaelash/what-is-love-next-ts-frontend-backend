@@ -319,9 +319,6 @@ function DefinitionContent(props: PageProps) {
             Gere uma imagem única e personalizada baseada na sua definição de amor. 
             Uma forma especial de eternizar seu sentimento em arte.
           </Typography>
-          {/* <Typography variant="body2" sx={{ color: '#ff4081', fontWeight: 'bold' }}>
-            Aproveite sua primeira geração gratuita ou gere mais por apenas R$ 1,00
-          </Typography> */}
         </Paper>
 
         <GenerateImageButton

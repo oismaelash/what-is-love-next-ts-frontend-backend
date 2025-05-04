@@ -33,9 +33,30 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
     } | null>(null);
     const [showCopiedMessage, setShowCopiedMessage] = useState(false);
     const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+    const [canGenerateFree, setCanGenerateFree] = useState<boolean | null>(null);
     const { user } = useAuth();
     const { trackEvent } = useAnalytics();
     const router = useRouter();
+
+    useEffect(() => {
+        const checkFreeGeneration = async () => {
+            if (user) {
+                try {
+                    const response = await fetch('/api/images/check-free-generation');
+                    const data = await response.json();
+                    setCanGenerateFree(data.canGenerateFree);
+                } catch (error) {
+                    console.error('Error checking free generation:', error);
+                    setCanGenerateFree(false);
+                }
+            } else {
+                const hasGeneratedFree = localStorage.getItem('hasGeneratedFree');
+                setCanGenerateFree(!hasGeneratedFree);
+            }
+        };
+
+        checkFreeGeneration();
+    }, [user]);
 
     const handlePayment = async () => {
         try {
@@ -118,6 +139,11 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                 message: 'Imagem gerada com sucesso!',
                 severity: 'success'
             });
+
+            if (isFree && !user) {
+                localStorage.setItem('hasGeneratedFree', 'true');
+                setCanGenerateFree(false);
+            }
         } catch (err) {
             setSnackbar({
                 open: true,
@@ -168,14 +194,31 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
 
     return (
         <Box sx={{ mt: 2 }}>
-            <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => setOpen(true)}
-                disabled={loading || isLoading}
-            >
-                {loading || isLoading ? <CircularProgress size={24} /> : 'Gerar Imagem (R$ 1,00)'}
-            </Button>
+            {!user && canGenerateFree ? (
+                <Button
+                    variant="contained"
+                    color="success"
+                    onClick={() => generateImage(true)}
+                    disabled={loading || isLoading}
+                    sx={{
+                        backgroundColor: '#4caf50',
+                        '&:hover': {
+                            backgroundColor: '#388e3c',
+                        }
+                    }}
+                >
+                    {loading || isLoading ? <CircularProgress size={24} /> : 'Gerar Imagem Gratuitamente'}
+                </Button>
+            ) : (
+                <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => setOpen(true)}
+                    disabled={loading || isLoading}
+                >
+                    {loading || isLoading ? <CircularProgress size={24} /> : 'Gerar Imagem (R$ 1,00)'}
+                </Button>
+            )}
 
             <Dialog
                 open={open} 
@@ -270,6 +313,28 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                         </Box>
                     ) : (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {canGenerateFree && (
+                                <Box sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                                    <Typography variant="body2" sx={{ mb: 1 }}>
+                                        Você pode gerar uma imagem gratuitamente!
+                                    </Typography>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => {
+                                            setOpen(false);
+                                            generateImage(true);
+                                        }}
+                                        sx={{
+                                            backgroundColor: '#4caf50',
+                                            '&:hover': {
+                                                backgroundColor: '#388e3c',
+                                            }
+                                        }}
+                                    >
+                                        Gerar Gratuitamente
+                                    </Button>
+                                </Box>
+                            )}
                             <Typography gutterBottom sx={{ textAlign: 'center', mb: 2, color: '#666' }}>
                                 Como você deseja pagar?
                             </Typography>

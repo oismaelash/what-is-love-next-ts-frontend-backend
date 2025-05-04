@@ -9,11 +9,12 @@ export async function GET() {
     const cookieStore = await cookies();
     const session = cookieStore.get('session');
     
+    // If user is not authenticated, they can always generate one free image
     if (!session) {
-      return NextResponse.json(
-        { error: 'Usuário não autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({
+        canGenerateFree: true,
+        freeImageCount: 0
+      });
     }
 
     await connectDB();
