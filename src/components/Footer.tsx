@@ -11,7 +11,7 @@ const Footer = () => {
         px: 2,
         backgroundColor: (theme) => theme.palette.primary.main,
         color: 'white',
-        position: 'fixed',
+        // position: 'fixed',
         bottom: 0,
         left: 0,
         right: 0,
