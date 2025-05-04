@@ -2,7 +2,7 @@ import mongoose, { Schema, model, Types, Document } from 'mongoose';
 
 export interface IGeneratedImage extends Document {
   definition: Types.ObjectId;
-  user: Types.ObjectId;      // Agora obrigatório, pois só usuários logados podem gerar
+  user: Types.ObjectId | null;      // Now optional, can be null for non-authenticated users
   imageUrl: string;
   createdAt: Date;
   likes: number;
@@ -13,7 +13,7 @@ export interface IGeneratedImage extends Document {
 
 const GeneratedImageSchema = new Schema<IGeneratedImage>({
   definition: { type: Schema.Types.ObjectId, ref: 'Definition', required: true },
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: Schema.Types.ObjectId, ref: 'User' },  // Removed required: true
   imageUrl: { type: String },
   createdAt: { type: Date, default: Date.now },
   likes: { type: Number, default: 0 },

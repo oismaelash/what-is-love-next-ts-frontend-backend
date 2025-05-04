@@ -24,7 +24,6 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
         message: '',
         severity: 'info'
     });
-    const [hasGeneratedFree, setHasGeneratedFree] = useState<boolean | null>(null);
     const [open, setOpen] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('stripe');
     const [pixData, setPixData] = useState<{
@@ -37,59 +36,6 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
     const { user } = useAuth();
     const { trackEvent } = useAnalytics();
     const router = useRouter();
-
-    useEffect(() => {
-        if (user) {
-            checkFreeGeneration();
-        }
-    }, [user]);
-
-    const checkFreeGeneration = async () => {
-        try {
-            const response = await fetch('/api/images/check-free-generation');
-            const data = await response.json();
-            setHasGeneratedFree(data.canGenerateFree);
-        } catch (error) {
-            setSnackbar({
-                open: true,
-                message: 'Erro ao verificar geração gratuita',
-                severity: 'error'
-            });
-        }
-    };
-
-    const checkPaymentStatus = async () => {
-        if (!pixData) return;
-        
-        try {
-            setIsCheckingPayment(true);
-            const response = await fetch(`/api/payment/check-pix-status?correlationID=${pixData.correlationID}`);
-            const data = await response.json();
-
-            if (data.paid) {
-                trackEvent('SUCCESS', 'PAYMENT', `PIX payment successful for image generation ${definitionId}`);
-                setOpen(false);
-                setPixData(null);
-                generateImage(false);
-            } else {
-                setSnackbar({
-                    open: true,
-                    message: 'Pagamento ainda não confirmado. Tente novamente em alguns instantes.',
-                    severity: 'info'
-                });
-            }
-        } catch (_err) {
-            setSnackbar({
-                open: true,
-                message: 'Erro ao verificar status do pagamento',
-                severity: 'error'
-            });
-            trackEvent('ERROR', 'PAYMENT', `Error checking PIX payment status for image generation ${definitionId}`);
-            console.error('Erro ao verificar status do pagamento:', _err);
-        } finally {
-            setIsCheckingPayment(false);
-        }
-    };
 
     const handlePayment = async () => {
         try {
@@ -172,8 +118,6 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                 message: 'Imagem gerada com sucesso!',
                 severity: 'success'
             });
-
-            setHasGeneratedFree(false);
         } catch (err) {
             setSnackbar({
                 open: true,
@@ -189,54 +133,51 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
         setSnackbar(prev => ({ ...prev, open: false }));
     };
 
-    if (!user) {
-        return (
-            <Box sx={{ mt: 2 }}>
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => router.push('/login')}
-                    sx={{ mb: 2 }}
-                >
-                    Faça login para gerar uma imagem
-                </Button>
-                <Snackbar
-                    open={true}
-                    autoHideDuration={6000}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                >
-                    <Alert severity="info">
-                        Faça login para gerar uma imagem desta definição
-                    </Alert>
-                </Snackbar>
-            </Box>
-        );
-    }
+    const checkPaymentStatus = async () => {
+        if (!pixData) return;
+        
+        try {
+            setIsCheckingPayment(true);
+            const response = await fetch(`/api/payment/check-pix-status?correlationID=${pixData.correlationID}`);
+            const data = await response.json();
+
+            if (data.paid) {
+                trackEvent('SUCCESS', 'PAYMENT', `PIX payment successful for image generation ${definitionId}`);
+                setOpen(false);
+                setPixData(null);
+                generateImage(false);
+            } else {
+                setSnackbar({
+                    open: true,
+                    message: 'Pagamento ainda não confirmado. Tente novamente em alguns instantes.',
+                    severity: 'info'
+                });
+            }
+        } catch (_err) {
+            setSnackbar({
+                open: true,
+                message: 'Erro ao verificar status do pagamento',
+                severity: 'error'
+            });
+            trackEvent('ERROR', 'PAYMENT', `Error checking PIX payment status for image generation ${definitionId}`);
+            console.error('Erro ao verificar status do pagamento:', _err);
+        } finally {
+            setIsCheckingPayment(false);
+        }
+    };
 
     return (
         <Box sx={{ mt: 2 }}>
-            {hasGeneratedFree === true ? (
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => generateImage(true)}
-                    disabled={loading || isLoading}
-                    sx={{ mb: 2 }}
-                >
-                    {loading || isLoading ? <CircularProgress size={24} /> : 'Gerar Imagem Gratuita'}
-                </Button>
-            ) : (
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => setOpen(true)}
-                    disabled={loading || isLoading}
-                >
-                    {loading || isLoading ? <CircularProgress size={24} /> : 'Gerar Imagem (R$ 1,00)'}
-                </Button>
-            )}
+            <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => setOpen(true)}
+                disabled={loading || isLoading}
+            >
+                {loading || isLoading ? <CircularProgress size={24} /> : 'Gerar Imagem (R$ 1,00)'}
+            </Button>
 
-            <Dialog 
+            <Dialog
                 open={open} 
                 onClose={() => {
                     setOpen(false);
@@ -371,7 +312,8 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                         </Box>
                     )}
                 </DialogContent>
-                <DialogActions sx={{ 
+                
+                <DialogActions sx={{
                     justifyContent: 'center',
                     p: 2,
                     borderTop: '1px solid rgba(0, 0, 0, 0.12)'

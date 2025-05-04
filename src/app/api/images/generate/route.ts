@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
 import GeneratedImage from '@/models/GeneratedImage';
 import Definition from '@/models/Definition';
 import { OpenAI } from 'openai';
@@ -13,26 +11,7 @@ const openai = new OpenAI({
 
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get('session');
-    
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Usuário não autenticado' },
-        { status: 401 }
-      );
-    }
-
     await connectDB();
-
-    const user = await User.findById(session.value);
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Usuário não encontrado' },
-        { status: 401 }
-      );
-    }
 
     const { definitionId, isFree } = await request.json();
 
@@ -46,25 +25,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verifica se é uma geração gratuita
-    if (isFree) {
-      const freeImageCount = await GeneratedImage.countDocuments({
-        user: user._id,
-        isFree: true
-      });
-
-      if (freeImageCount > 0) {
-        return NextResponse.json(
-          { error: 'Você já usou sua geração gratuita' },
-          { status: 400 }
-        );
-      }
-    }
-
     // Cria registro da imagem
     const imageRecord = await GeneratedImage.create({
       definition: definitionId,
-      user: user._id,
+      user: null, // Allow null for non-authenticated users
       isFree,
       status: 'pending'
     });
