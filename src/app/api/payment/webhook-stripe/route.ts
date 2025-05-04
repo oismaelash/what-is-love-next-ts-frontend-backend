@@ -38,11 +38,12 @@ export async function POST(request: Request) {
         metadata: {
           definitionId: string;
           durationInDays: string;
+          isImageGeneration: string;
         };
       };
-      const { definitionId, durationInDays } = session.metadata;
+      const { definitionId, durationInDays, isImageGeneration } = session.metadata;
 
-      if (!definitionId || !durationInDays) {
+      if (!definitionId) {
         return NextResponse.json(
           { error: 'Missing metadata' },
           { status: 400 }
@@ -50,6 +51,11 @@ export async function POST(request: Request) {
       }
 
       await connectDB();
+
+      if (isImageGeneration === 'true') {
+        // For image generation, we don't need to update the definition
+        return NextResponse.json({ success: true });
+      }
 
       // Calculate expiration date
       const highlightExpiresAt = new Date();

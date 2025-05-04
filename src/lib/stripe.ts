@@ -1,4 +1,4 @@
-import { HIGHLIGHT_PRICES } from '@/utils/constants';
+import { HIGHLIGHT_PRICES, IMAGE_GENERATION_PRICE } from '@/utils/constants';
 import Stripe from 'stripe';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -11,9 +11,10 @@ export type HighlightDuration = keyof typeof HIGHLIGHT_PRICES;
 export const createCheckoutSession = async (
   definitionId: string,
   durationInDays: HighlightDuration,
-  userId: string
+  userId: string,
+  isImageGeneration: boolean = false
 ) => {
-  const price = HIGHLIGHT_PRICES[durationInDays];
+  const price = isImageGeneration ? IMAGE_GENERATION_PRICE : HIGHLIGHT_PRICES[durationInDays];
   
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
@@ -22,8 +23,10 @@ export const createCheckoutSession = async (
         price_data: {
           currency: 'brl',
           product_data: {
-            name: `Destaque de Definição por ${durationInDays} dias`,
-            description: `Sua definição será destacada no topo da lista por ${durationInDays} dias`,
+            name: isImageGeneration ? 'Geração de Imagem' : `Destaque de Definição por ${durationInDays} dias`,
+            description: isImageGeneration 
+              ? 'Geração de uma imagem para sua definição' 
+              : `Sua definição será destacada no topo da lista por ${durationInDays} dias`,
           },
           unit_amount: price,
         },
@@ -31,12 +34,13 @@ export const createCheckoutSession = async (
       },
     ],
     mode: 'payment',
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicoes-destaque?highlight=success`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicoes-destaque?highlight=cancelled`,
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicao/${definitionId}?payment=success&type=${isImageGeneration ? 'image' : 'highlight'}`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/definicao/${definitionId}?payment=cancelled&type=${isImageGeneration ? 'image' : 'highlight'}`,
     metadata: {
       definitionId,
       durationInDays: durationInDays.toString(),
       userId,
+      isImageGeneration: isImageGeneration.toString(),
     },
   });
 

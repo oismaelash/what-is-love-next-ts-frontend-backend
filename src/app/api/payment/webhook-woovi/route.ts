@@ -6,7 +6,6 @@ import Definition from '@/models/Definition';
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
-    console.log(payload);
     const headersList = await headers();
     const signature = headersList.get('x-webhook-signature');
 
@@ -27,32 +26,21 @@ export async function POST(request: Request) {
     // TODO: Verify webhook signature with Woovi secret
     // For now, we'll trust the webhook
 
-    // sample payload
-    // payload.additionalInfo = [
-    //   {
-    //     "key": "definitionId",
-    //     "value": "6813f5055752c12bc6c8595e"
-    //   },
-    //   {
-    //     "key": "durationInDays",
-    //     "value": "1"
-    //   }
-    // ]
-
     let definitionId = '';
     let durationInDays = '';
-
-    console.log(payload.charge.additionalInfo);
+    let isImageGeneration = 'false';
 
     payload.charge.additionalInfo.forEach((info: { key: string; value: string }) => {
       if (info.key === 'definitionId') {
         definitionId = info.value;
       } else if (info.key === 'durationInDays') {
         durationInDays = info.value;
+      } else if (info.key === 'isImageGeneration') {
+        isImageGeneration = info.value;
       }
     });
 
-    if (!definitionId || !durationInDays) {
+    if (!definitionId) {
       return NextResponse.json(
         { error: 'Missing additional info' },
         { status: 400 }
@@ -60,6 +48,11 @@ export async function POST(request: Request) {
     }
 
     await connectDB();
+
+    if (isImageGeneration === 'true') {
+      // For image generation, we don't need to update the definition
+      return NextResponse.json({ success: true });
+    }
 
     // Calculate expiration date
     const highlightExpiresAt = new Date();

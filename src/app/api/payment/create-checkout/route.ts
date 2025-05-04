@@ -4,15 +4,15 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { createCheckoutSession, HighlightDuration } from '@/lib/stripe';
 import { createPixCharge } from '@/lib/woovi';
-import { HIGHLIGHT_PRICES } from '@/utils/constants';
+import { HIGHLIGHT_PRICES, IMAGE_GENERATION_PRICE } from '@/utils/constants';
 
 export async function POST(request: Request) {
   try {
-    const { definitionId, durationInDays, paymentMethod } = await request.json();
+    const { definitionId, durationInDays, paymentMethod, isImageGeneration } = await request.json();
 
-    if (!definitionId || !durationInDays || !paymentMethod) {
+    if (!definitionId || !paymentMethod) {
       return NextResponse.json(
-        { error: 'ID da definição, duração e método de pagamento são obrigatórios' },
+        { error: 'ID da definição e método de pagamento são obrigatórios' },
         { status: 400 }
       );
     }
@@ -40,11 +40,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get the price for the selected duration
-    const price = HIGHLIGHT_PRICES[durationInDays as keyof typeof HIGHLIGHT_PRICES];
+    // Get the price based on whether it's for image generation or highlighting
+    const price = isImageGeneration ? IMAGE_GENERATION_PRICE : HIGHLIGHT_PRICES[durationInDays as keyof typeof HIGHLIGHT_PRICES];
     if (!price) {
       return NextResponse.json(
-        { error: 'Duração inválida' },
+        { error: 'Preço inválido' },
         { status: 400 }
       );
     }
@@ -53,8 +53,9 @@ export async function POST(request: Request) {
       // Create Stripe checkout session
       const stripeSession = await createCheckoutSession(
         definitionId,
-        durationInDays as HighlightDuration,
-        userId
+        isImageGeneration ? 1 : (durationInDays as HighlightDuration),
+        userId,
+        isImageGeneration
       );
 
       return NextResponse.json({
@@ -64,8 +65,9 @@ export async function POST(request: Request) {
       // Create PIX charge
       const pixCharge = await createPixCharge(
         definitionId,
-        durationInDays as HighlightDuration,
-        userId
+        isImageGeneration ? 1 : (durationInDays as HighlightDuration),
+        userId,
+        isImageGeneration
       );
 
       return NextResponse.json({

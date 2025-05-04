@@ -7,6 +7,7 @@ import { IDefinition } from '@/models/Definition';
 import { useAuth } from '@/context/AuthContext';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import GenerateImageButton from '@/components/GenerateImageButton';
+import { useSearchParams } from 'next/navigation';
 
 interface PageProps {
   params: Promise<{
@@ -27,9 +28,8 @@ export default function DefinitionPage(props: PageProps) {
 }
 
 function DefinitionContent(props: PageProps) {
-
   const [definition, setDefinition] = useState<IDefinition | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [likedDefinitions, setLikedDefinitions] = useState<Set<string>>(new Set());
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
@@ -40,15 +40,48 @@ function DefinitionContent(props: PageProps) {
   const { user } = useAuth();
   const { trackEvent } = useAnalytics();
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [_, setHasGeneratedFree] = useState<boolean | null>(null);
+  const [isGeneratingFromPayment, setIsGeneratingFromPayment] = useState(false);
+  const [paymentProcessed, setPaymentProcessed] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const searchParams = useSearchParams();
+
+  // Check for payment return status
+  useEffect(() => {
+    if (!searchParams || !definition || isGeneratingFromPayment || paymentProcessed) return;
+    
+    const paymentStatus = searchParams.get('payment');
+    const paymentType = searchParams.get('type');
+
+    if (paymentStatus === 'success' && paymentType === 'image') {
+      setPaymentProcessed(true);
+      setSnackbar({
+        open: true,
+        message: 'Pagamento realizado com sucesso! Gerando sua imagem...',
+        severity: 'success'
+      });
+      // Generate the image
+      setIsGeneratingFromPayment(true);
+      generateImage(false);
+      trackEvent('SUCCESS', 'PAYMENT', 'Stripe payment successful for image generation');
+    } else if (paymentStatus === 'cancelled' && paymentType === 'image') {
+      setPaymentProcessed(true);
+      setSnackbar({
+        open: true,
+        message: 'Pagamento cancelado. Você pode tentar novamente quando quiser.',
+        severity: 'info'
+      });
+      trackEvent('ERROR', 'PAYMENT', 'Stripe payment cancelled by user for image generation');
+    }
+  }, [searchParams, definition, isGeneratingFromPayment, paymentProcessed]);
 
   // Fetch definition
   useEffect(() => {
     const fetchDefinition = async () => {
       const { id } = await props.params;
-      console.log(id);
 
       try {
-        setLoading(true);
+        setPageLoading(true);
         setError(null);
 
         const response = await fetch(`/api/definitions/${id}`);
@@ -58,13 +91,12 @@ function DefinitionContent(props: PageProps) {
 
         const data = await response.json();
         setDefinition(data);
-        console.log('Tracking view event for definition:', id);
         trackEvent('VIEW', 'DEFINITION', `Viewed definition ${id}`);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
         trackEvent('VIEW', 'DEFINITION', `Failed to view definition ${id}`, 0);
       } finally {
-        setLoading(false);
+        setPageLoading(false);
       }
     };
 
@@ -98,14 +130,14 @@ function DefinitionContent(props: PageProps) {
     loadLikedDefinitions();
   }, [user]);
 
-  // Adiciona esta função para buscar as imagens geradas
+  // Fetch generated images
   useEffect(() => {
     const fetchGeneratedImages = async () => {
       if (definition && user) {
         try {
           const response = await fetch(`/api/images/definition/${definition._id}`);
           const data = await response.json();
-          setGeneratedImages(data.images.map((img: any) => img.imageUrl));
+          setGeneratedImages(data.images.reverse().map((img: any) => img.imageUrl));
         } catch (error) {
           console.error('Erro ao buscar imagens geradas:', error);
         }
@@ -163,10 +195,56 @@ function DefinitionContent(props: PageProps) {
   };
 
   const handleImageGenerated = (imageUrl: string) => {
-    setGeneratedImages(prev => [...prev, imageUrl]);
+    setGeneratedImages(prev => [imageUrl, ...prev]);
   };
 
-  if (loading) {
+  const generateImage = async (isFree: boolean) => {
+    try {
+      setIsGeneratingImage(true);
+      setSnackbar({
+        open: true,
+        message: 'Gerando imagem...',
+        severity: 'info'
+      });
+
+      const response = await fetch('/api/images/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          definitionId: definition?._id,
+          isFree
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao gerar imagem');
+      }
+
+      handleImageGenerated(data.imageUrl);
+      setSnackbar({
+        open: true,
+        message: 'Imagem gerada com sucesso!',
+        severity: 'success'
+      });
+
+      setHasGeneratedFree(false);
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err instanceof Error ? err.message : 'Erro ao gerar imagem',
+        severity: 'error'
+      });
+    } finally {
+      setIsGeneratingImage(false);
+      setIsGeneratingFromPayment(false);
+    }
+  };
+
+  if (pageLoading) {
     return (
       <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
         <CircularProgress />
@@ -215,6 +293,7 @@ function DefinitionContent(props: PageProps) {
         <GenerateImageButton
           definitionId={definition._id.toString()}
           onImageGenerated={handleImageGenerated}
+          isLoading={isGeneratingImage}
         />
 
         {generatedImages.length > 0 && (
