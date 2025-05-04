@@ -36,6 +36,10 @@ jobs:
           echo "WOOVI_API_KEY=${{ secrets.WOOVI_API_KEY }}" >> .env
           echo "NEXT_PUBLIC_ADSENSE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_ADSENSE_CLIENT_ID }}" >> .env
           echo "NEXT_PUBLIC_GA_ID=${{ secrets.NEXT_PUBLIC_GA_ID }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AWS_REGION=${{ vars.AWS_REGION }}" >> .env
+          echo "AWS_BUCKET_NAME=${{ vars.AWS_BUCKET_NAME }}" >> .env
           # Add other environment variables as needed
 
       - name: Login to Amazon ECR

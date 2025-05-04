@@ -5,6 +5,7 @@ import User from '@/models/User';
 import GeneratedImage from '@/models/GeneratedImage';
 import Definition from '@/models/Definition';
 import { OpenAI } from 'openai';
+import { uploadToS3 } from '@/lib/s3';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -83,11 +84,29 @@ export async function POST(request: Request) {
 
       const imageUrl = response.data[0].url;
 
-      // Atualiza o registro com a URL da imagem
+      // Atualiza o registro com a URL temporária da imagem
       await GeneratedImage.findByIdAndUpdate(imageRecord._id, {
         imageUrl,
-        status: 'completed'
+        status: 'processing'
       });
+
+      // Inicia o processo de upload para o S3 de forma assíncrona
+      const s3Key = `images/${imageRecord._id}.png`;
+      uploadToS3(imageUrl, s3Key)
+        .then(async (s3Url) => {
+          // Atualiza o registro com a URL do S3
+          await GeneratedImage.findByIdAndUpdate(imageRecord._id, {
+            imageUrl: s3Url,
+            status: 'completed'
+          });
+        })
+        .catch(async (error) => {
+          console.error('Erro ao fazer upload para S3:', error);
+          await GeneratedImage.findByIdAndUpdate(imageRecord._id, {
+            status: 'failed',
+            error: error instanceof Error ? error.message : 'Erro ao fazer upload para S3'
+          });
+        });
 
       return NextResponse.json({
         imageUrl,
