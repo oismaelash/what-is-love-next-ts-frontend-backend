@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale';
 import FavoriteButton from './FavoriteButton';
 import HighlightButton from './HighlightButton';
 import DeleteButton from './DeleteButton';
+import CopyButton from './CopyButton';
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
 import ShareDialog from './ShareDialog';
@@ -74,21 +75,19 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
 
   useEffect(() => {
     const checkForImages = async () => {
-      if (user) {
-        try {
-          const response = await fetch(`/api/images/definition/${definition._id}`);
-          if (response.ok) {
-            const data = await response.json();
-            setHasImages(data.images.length > 0);
-          }
-        } catch (error) {
-          console.error('Error checking for images:', error);
+      try {
+        const response = await fetch(`/api/images/definition/${definition._id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setHasImages(data.images.length > 0);
         }
+      } catch (error) {
+        console.error('Error checking for images:', error);
       }
     };
 
     checkForImages();
-  }, [definition._id, user]);
+  }, [definition._id]);
 
   const handleLike = () => {
     if (onLike) {
@@ -199,6 +198,7 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
                 />
               </>
             )}
+            <CopyButton content={definition.content} />
             {hasImages && !isDefinitionDetailPage && (
               <Button
                 variant="outlined"

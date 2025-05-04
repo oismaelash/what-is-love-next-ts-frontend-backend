@@ -3,6 +3,7 @@ import { Button, CircularProgress, Box, Snackbar, Alert, Dialog, DialogTitle, Di
 import { useAuth } from '@/context/AuthContext';
 import { CreditCard, QrCode } from '@mui/icons-material';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useRouter } from 'next/navigation';
 
 interface GenerateImageButtonProps {
     definitionId: string;
@@ -35,6 +36,7 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
     const [isCheckingPayment, setIsCheckingPayment] = useState(false);
     const { user } = useAuth();
     const { trackEvent } = useAnalytics();
+    const router = useRouter();
 
     useEffect(() => {
         if (user) {
@@ -189,15 +191,25 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
 
     if (!user) {
         return (
-            <Snackbar
-                open={true}
-                autoHideDuration={6000}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                <Alert severity="info">
-                    Faça login para gerar uma imagem desta definição
-                </Alert>
-            </Snackbar>
+            <Box sx={{ mt: 2 }}>
+                <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => router.push('/login')}
+                    sx={{ mb: 2 }}
+                >
+                    Faça login para gerar uma imagem
+                </Button>
+                <Snackbar
+                    open={true}
+                    autoHideDuration={6000}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                >
+                    <Alert severity="info">
+                        Faça login para gerar uma imagem desta definição
+                    </Alert>
+                </Snackbar>
+            </Box>
         );
     }
 
@@ -220,7 +232,7 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                     onClick={() => setOpen(true)}
                     disabled={loading || isLoading}
                 >
-                    {loading || isLoading ? <CircularProgress size={24} /> : 'Gerar Imagem (R$ 2,00)'}
+                    {loading || isLoading ? <CircularProgress size={24} /> : 'Gerar Imagem (R$ 0,90)'}
                 </Button>
             )}
 

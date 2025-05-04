@@ -133,7 +133,7 @@ function DefinitionContent(props: PageProps) {
   // Fetch generated images
   useEffect(() => {
     const fetchGeneratedImages = async () => {
-      if (definition && user) {
+      if (definition) {
         try {
           const response = await fetch(`/api/images/definition/${definition._id}`);
           const data = await response.json();
@@ -145,7 +145,7 @@ function DefinitionContent(props: PageProps) {
     };
 
     fetchGeneratedImages();
-  }, [definition, user]);
+  }, [definition]);
 
   const handleLike = async (definitionId: string) => {
     try {
