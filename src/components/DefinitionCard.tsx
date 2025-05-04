@@ -1,7 +1,7 @@
 'use client';
 
-import { Card, CardContent, Typography, Box, IconButton, Stack, Chip } from '@mui/material';
-import { Favorite, FavoriteBorder, Star, Share } from '@mui/icons-material';
+import { Card, CardContent, Typography, Box, IconButton, Stack, Chip, Button } from '@mui/material';
+import { Favorite, FavoriteBorder, Star, Share, Image } from '@mui/icons-material';
 import { IDefinition } from '@/models/Definition';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -12,7 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
 import ShareDialog from './ShareDialog';
 import { useAnalytics } from '@/hooks/useAnalytics';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface DefinitionCardProps {
   definition: IDefinition;
@@ -27,8 +27,13 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const { trackEvent } = useAnalytics();
   const router = useRouter();
+  const pathname = usePathname();
+  const [hasImages, setHasImages] = useState(false);
   const isHighlighted = definition.isHighlighted &&
     (!definition.highlightExpiresAt || new Date(definition.highlightExpiresAt) > new Date());
+
+  // Check if we're on the definition detail page
+  const isDefinitionDetailPage = pathname?.startsWith('/definicao/');
 
   // Check if author is an ID (starts with ObjectId format) or a name string
   const isAuthorId = /^[0-9a-fA-F]{24}$/.test(definition.author);
@@ -67,6 +72,24 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
     fetchAuthorName();
   }, [definition.author, isAuthorId]);
 
+  useEffect(() => {
+    const checkForImages = async () => {
+      if (user) {
+        try {
+          const response = await fetch(`/api/images/definition/${definition._id}`);
+          if (response.ok) {
+            const data = await response.json();
+            setHasImages(data.images.length > 0);
+          }
+        } catch (error) {
+          console.error('Error checking for images:', error);
+        }
+      }
+    };
+
+    checkForImages();
+  }, [definition._id, user]);
+
   const handleLike = () => {
     if (onLike) {
       trackEvent('FAVORITE', 'DEFINITION', `Liked definition ${definition._id}`);
@@ -77,6 +100,11 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
   const handleShare = () => {
     setShareDialogOpen(true);
     trackEvent('CLICK', 'DEFINITION', `Shared definition ${definition._id}`);
+  };
+
+  const handleViewImages = () => {
+    router.push(`/definicao/${definition._id}`);
+    trackEvent('CLICK', 'DEFINITION', `Viewed images for definition ${definition._id}`);
   };
 
   const handleDelete = async () => {
@@ -170,6 +198,16 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
                   onDelete={onDelete}
                 />
               </>
+            )}
+            {hasImages && !isDefinitionDetailPage && (
+              <Button
+                variant="outlined"
+                startIcon={<Image />}
+                onClick={handleViewImages}
+                size="small"
+              >
+                Ver Imagens
+              </Button>
             )}
           </Box>
         </CardContent>

@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Container, Typography, Box, CircularProgress, Snackbar, Alert } from '@mui/material';
+import { Container, Typography, Box, CircularProgress, Snackbar, Alert, Grid, Card, CardMedia } from '@mui/material';
 import DefinitionCard from '@/components/DefinitionCard';
 import { IDefinition } from '@/models/Definition';
 import { useAuth } from '@/context/AuthContext';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import GenerateImageButton from '@/components/GenerateImageButton';
 
 interface PageProps {
   params: Promise<{
@@ -38,6 +39,7 @@ function DefinitionContent(props: PageProps) {
   });
   const { user } = useAuth();
   const { trackEvent } = useAnalytics();
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
 
   // Fetch definition
   useEffect(() => {
@@ -96,6 +98,23 @@ function DefinitionContent(props: PageProps) {
     loadLikedDefinitions();
   }, [user]);
 
+  // Adiciona esta função para buscar as imagens geradas
+  useEffect(() => {
+    const fetchGeneratedImages = async () => {
+      if (definition && user) {
+        try {
+          const response = await fetch(`/api/images/definition/${definition._id}`);
+          const data = await response.json();
+          setGeneratedImages(data.images.map((img: any) => img.imageUrl));
+        } catch (error) {
+          console.error('Erro ao buscar imagens geradas:', error);
+        }
+      }
+    };
+
+    fetchGeneratedImages();
+  }, [definition, user]);
+
   const handleLike = async (definitionId: string) => {
     try {
       // Check if already liked
@@ -143,6 +162,10 @@ function DefinitionContent(props: PageProps) {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
+  const handleImageGenerated = (imageUrl: string) => {
+    setGeneratedImages(prev => [...prev, imageUrl]);
+  };
+
   if (loading) {
     return (
       <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
@@ -173,37 +196,63 @@ function DefinitionContent(props: PageProps) {
 
   return (
     <Box sx={{ width: '100%', height: '100%', overflow: 'auto' }}>
-      <Container maxWidth="md" sx={{ py: 4, mt: 5 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Definição Compartilhada
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          Uma definição especial sobre o que é amor
-        </Typography>
-      </Box>
+      <Container maxWidth="md" sx={{ py: 4, mt: 5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Definição Compartilhada
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            Uma definição especial sobre o que é amor
+          </Typography>
+        </Box>
 
-      <DefinitionCard
-        definition={definition}
-        onLike={() => handleLike(definition._id.toString())}
-        isLiked={likedDefinitions.has(definition._id.toString())}
-      />
+        <DefinitionCard
+          definition={definition}
+          onLike={() => handleLike(definition._id.toString())}
+          isLiked={likedDefinitions.has(definition._id.toString())}
+        />
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
+        <GenerateImageButton
+          definitionId={definition._id.toString()}
+          onImageGenerated={handleImageGenerated}
+        />
+
+        {generatedImages.length > 0 && (
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h5" gutterBottom>
+              Imagens Geradas
+            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+              {generatedImages.map((imageUrl, index) => (
+                <Box key={index}>
+                  <Card>
+                    <CardMedia
+                      component="img"
+                      image={imageUrl}
+                      alt={`Imagem gerada ${index + 1}`}
+                      sx={{ height: 200, objectFit: 'cover' }}
+                    />
+                  </Card>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
           onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: '100%', zIndex: 10000 }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Container>
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbar.severity}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Container>
     </Box>
   );
 } 
