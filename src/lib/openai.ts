@@ -14,7 +14,7 @@ export async function moderateContent(content: string): Promise<{
       messages: [
         {
           role: "system",
-          content: "You are a content moderator. Analyze the following content and determine if it is appropriate for the theme: what is love. Respond with 'APPROVED' if appropriate, or 'REJECTED' followed by a reason if inappropriate."
+          content: "Você é um moderador de conteúdo. Analise o conteúdo a seguir e determine se é apropriado para o tema: o que é amor. Responda com 'APROVADO' se for apropriado, ou 'REJEITADO' seguido de uma razão se for inapropriado."
         },
         {
           role: "user",
@@ -27,10 +27,10 @@ export async function moderateContent(content: string): Promise<{
 
     const result = response.choices[0].message.content;
     
-    if (result?.startsWith('REJECTED')) {
+    if (result?.startsWith('REJEITADO')) {
       return {
         isApproved: false,
-        reason: result.replace('REJECTED', '').trim() || 'O conteúdo contém material inapropriado ou ofensivo.',
+        reason: result.replace('REJEITADO', '').trim() || 'O conteúdo contém material inapropriado ou ofensivo.',
       };
     }
 
