@@ -23,9 +23,9 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
   const [authorName, setAuthorName] = useState<string>('');
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const { trackEvent } = useAnalytics();
-  const isHighlighted = definition.isHighlighted && 
+  const isHighlighted = definition.isHighlighted &&
     (!definition.highlightExpiresAt || new Date(definition.highlightExpiresAt) > new Date());
-  
+
   // Check if author is an ID (starts with ObjectId format) or a name string
   const isAuthorId = /^[0-9a-fA-F]{24}$/.test(definition.author);
   console.log('User:', user);
@@ -37,7 +37,7 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
 
   // For old definitions (with author name), we'll consider the user as author if they're logged in
   // and their name matches the author name
-  const isAuthor = isAuthorId 
+  const isAuthor = isAuthorId
     ? user?._id?.toString() === definition.author.toString()
     : user?.name === definition.author;
 
@@ -77,8 +77,8 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
 
   return (
     <>
-      <Card 
-        sx={{ 
+      <Card
+        sx={{
           mb: 2,
           border: isHighlighted ? '2px solid #FFD700' : 'none',
           boxShadow: isHighlighted ? '0 0 10px rgba(255, 215, 0, 0.3)' : 'none',
@@ -104,7 +104,7 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
               </Typography>
             </Stack>
           </Stack>
-          
+
           <Typography variant="body1" paragraph>
             {definition.content}
           </Typography>
@@ -125,20 +125,22 @@ export default function DefinitionCard({ definition, onLike, isLiked }: Definiti
               <IconButton onClick={handleShare} size="small">
                 <Share />
               </IconButton>
-              {isAuthor && <HighlightButton definitionId={definition._id.toString()} isAuthor={isAuthor} />}
-              <FavoriteButton 
-                definitionId={definition._id.toString()} 
+              <FavoriteButton
+                definitionId={definition._id.toString()}
                 onFavorite={() => trackEvent('FAVORITE', 'DEFINITION', `Added to favorites ${definition._id}`)}
                 onUnfavorite={() => trackEvent('FAVORITE', 'DEFINITION', `Removed from favorites ${definition._id}`)}
               />
             </Stack>
           </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 1 }}>
+            {isAuthor && <HighlightButton definitionId={definition._id.toString()} isAuthor={isAuthor} />}
+          </Box>
         </CardContent>
       </Card>
-      <ShareDialog 
-        open={shareDialogOpen} 
-        onClose={() => setShareDialogOpen(false)} 
-        definitionId={definition._id.toString()} 
+      <ShareDialog
+        open={shareDialogOpen}
+        onClose={() => setShareDialogOpen(false)}
+        definitionId={definition._id.toString()}
       />
     </>
   );

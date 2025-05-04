@@ -87,9 +87,10 @@ export default function MinhasDefinicoes() {
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, justifyContent: 'center', alignItems: 'center' }}>
             {definitions.map((definition) => (
-              <Box key={definition._id.toString()} sx={{ mb: 2 }}>
-                <DefinitionCard definition={definition} />
-              </Box>
+              <DefinitionCard
+                key={definition._id.toString()}
+                definition={definition}
+              />
             ))}
             <Typography variant="body1" color="text.secondary">
               Você chegou ao fim das definições
