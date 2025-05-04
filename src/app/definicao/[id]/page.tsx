@@ -45,6 +45,7 @@ function DefinitionContent(props: PageProps) {
   const [isGeneratingFromPayment, setIsGeneratingFromPayment] = useState(false);
   const [paymentProcessed, setPaymentProcessed] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
   const searchParams = useSearchParams();
 
   // Check for payment return status
@@ -136,11 +137,14 @@ function DefinitionContent(props: PageProps) {
     const fetchGeneratedImages = async () => {
       if (definition) {
         try {
+          setIsLoadingImages(true);
           const response = await fetch(`/api/images/definition/${definition._id}`);
           const data = await response.json();
           setGeneratedImages(data.images.reverse().map((img: any) => img.imageUrl));
         } catch (error) {
           console.error('Erro ao buscar imagens geradas:', error);
+        } finally {
+          setIsLoadingImages(false);
         }
       }
     };
@@ -297,7 +301,11 @@ function DefinitionContent(props: PageProps) {
           isLoading={isGeneratingImage}
         />
 
-        {generatedImages.length > 0 && (
+        {isLoadingImages ? (
+          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+            <CircularProgress />
+          </Box>
+        ) : generatedImages.length > 0 && (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h5" gutterBottom>
               Imagens Geradas
