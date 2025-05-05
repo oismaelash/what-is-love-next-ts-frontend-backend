@@ -142,10 +142,6 @@ export default function HighlightButton({ definitionId, isAuthor }: HighlightBut
     }
   };
 
-  if (!isAuthor) {
-    return null;
-  }
-
   return (
     <>
       <Button

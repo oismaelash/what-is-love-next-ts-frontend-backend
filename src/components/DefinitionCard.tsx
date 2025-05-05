@@ -201,14 +201,12 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
             </Stack>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 1, gap: 1 }}>
+            <HighlightButton definitionId={definition._id.toString()} isAuthor={isAuthor} />
             {isAuthor && (
-              <>
-                <HighlightButton definitionId={definition._id.toString()} isAuthor={isAuthor} />
-                <DeleteButton
-                  definitionId={definition._id.toString()}
-                  onDelete={onDelete}
-                />
-              </>
+              <DeleteButton
+                definitionId={definition._id.toString()}
+                onDelete={onDelete}
+              />
             )}
             <Box onClick={(e) => e.stopPropagation()}>
               <CopyButton content={definition.content} />
@@ -220,7 +218,7 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
                 onClick={(e) => { e.stopPropagation(); handleViewImages(); }}
                 size="small"
               >
-                Ver Imagens
+                Imagens
               </Button>
             )}
           </Box>

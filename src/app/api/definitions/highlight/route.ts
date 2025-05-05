@@ -37,14 +37,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if the user is the author of the definition
-    if (definition.author !== userId) {
-      return NextResponse.json(
-        { error: 'Apenas o autor pode destacar a definição' },
-        { status: 403 }
-      );
-    }
-
     // Calculate expiration date
     const highlightExpiresAt = new Date();
     highlightExpiresAt.setDate(highlightExpiresAt.getDate() + durationInDays);
