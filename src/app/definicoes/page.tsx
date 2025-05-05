@@ -36,8 +36,18 @@ export default function DefinitionsPage() {
           throw new Error('Failed to fetch definitions');
         }
 
-        setDefinitions(data.definitions);
-        console.log('Definitions loaded:', data.definitions.length);
+        // Sort definitions to show highlighted ones first
+        const sortedDefinitions = data.definitions.sort((a, b) => {
+          const aIsHighlighted = a.isHighlighted && (!a.highlightExpiresAt || new Date(a.highlightExpiresAt) > new Date());
+          const bIsHighlighted = b.isHighlighted && (!b.highlightExpiresAt || new Date(b.highlightExpiresAt) > new Date());
+          
+          if (aIsHighlighted && !bIsHighlighted) return -1;
+          if (!aIsHighlighted && bIsHighlighted) return 1;
+          return 0;
+        });
+
+        setDefinitions(sortedDefinitions);
+        console.log('Definitions loaded:', sortedDefinitions.length);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
