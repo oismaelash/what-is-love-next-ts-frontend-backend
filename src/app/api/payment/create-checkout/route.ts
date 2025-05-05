@@ -1,7 +1,4 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
 import { createCheckoutSession, HighlightDuration } from '@/lib/stripe';
 import { createPixCharge } from '@/lib/woovi';
 import { HIGHLIGHT_PRICES, IMAGE_GENERATION_PRICE } from '@/utils/constants';
@@ -17,29 +14,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get user session
-    const cookieStore = await cookies();
-    const session = cookieStore.get('session')?.value;
-    const userId = session;
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Usuário não autenticado' },
-        { status: 401 }
-      );
-    }
-
-    await connectDB();
-
-    // Find the user
-    const user = await User.findById(userId);
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Usuário não encontrado' },
-        { status: 404 }
-      );
-    }
-
     // Get the price based on whether it's for image generation or highlighting
     const price = isImageGeneration ? IMAGE_GENERATION_PRICE : HIGHLIGHT_PRICES[durationInDays as keyof typeof HIGHLIGHT_PRICES];
     if (!price) {
@@ -49,12 +23,15 @@ export async function POST(request: Request) {
       );
     }
 
+    // Generate a temporary user ID for anonymous users
+    const tempUserId = `temp_${Date.now()}`;
+
     if (paymentMethod === 'stripe') {
       // Create Stripe checkout session
       const stripeSession = await createCheckoutSession(
         definitionId,
         isImageGeneration ? 1 : (durationInDays as HighlightDuration),
-        userId,
+        tempUserId,
         isImageGeneration
       );
 
@@ -66,7 +43,7 @@ export async function POST(request: Request) {
       const pixCharge = await createPixCharge(
         definitionId,
         isImageGeneration ? 1 : (durationInDays as HighlightDuration),
-        userId,
+        tempUserId,
         isImageGeneration
       );
 
