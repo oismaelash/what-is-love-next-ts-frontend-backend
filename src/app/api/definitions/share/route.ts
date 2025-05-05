@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Definition from '@/models/Definition';
+import { logger } from '@/utils/logger';
 
 export async function POST(request: Request) {
   try {
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(definition);
   } catch (error) {
-    console.error('Error incrementing shares:', error);
+    logger.error('Error incrementing shares:', error);
     return NextResponse.json(
       { error: 'Erro ao incrementar compartilhamentos' },
       { status: 500 }

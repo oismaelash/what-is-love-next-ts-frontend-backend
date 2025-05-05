@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logger } from '@/utils/logger';
 
 export async function GET(request: Request) {
   try {
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
       );
     }
 
-    console.log('Checking PIX status for correlationID:', correlationID);
+    logger.log('Checking PIX status for correlationID:', correlationID);
 
     const response = await fetch(
       `https://api.openpix.com.br/api/v1/charge/${correlationID}`,
@@ -29,16 +30,16 @@ export async function GET(request: Request) {
     }
 
     const data = await response.json();
-    console.log('PIX status response:', data);
+    logger.log('PIX status response:', data);
     
     const isPaid = data.charge.status === 'COMPLETED';
-    console.log('Is paid?', isPaid);
+    logger.log('Is paid?', isPaid);
     
     return NextResponse.json({
       paid: isPaid,
     });
   } catch (error) {
-    console.error('Error checking PIX status:', error);
+    logger.error('Error checking PIX status:', error);
     return NextResponse.json(
       { error: 'Failed to check payment status' },
       { status: 500 }

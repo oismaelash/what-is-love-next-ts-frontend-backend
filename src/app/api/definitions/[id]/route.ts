@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import Definition from '@/models/Definition';
+import { logger } from '@/utils/logger';
 
 export async function GET(
   _request: NextRequest,
@@ -23,7 +24,7 @@ export async function GET(
 
     return NextResponse.json(definition);
   } catch (error) {
-    console.error('Error fetching definition:', error);
+    logger.error('Error fetching definition:', error);
     return NextResponse.json(
       { error: 'Erro ao buscar definição' },
       { status: 500 }
@@ -75,7 +76,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting definition:', error);
+    logger.error('Error deleting definition:', error);
     return NextResponse.json(
       { error: 'Erro ao deletar definição' },
       { status: 500 }

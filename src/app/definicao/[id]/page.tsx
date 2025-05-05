@@ -29,6 +29,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import { AutoAwesome, Image as ImageIcon, Comment as CommentIcon } from '@mui/icons-material';
 import Comment from '@/components/Comment';
 import CommentForm from '@/components/CommentForm';
+import { logger } from '@/utils/logger';
 
 interface PageProps {
   params: Promise<{
@@ -121,7 +122,7 @@ export default function DefinitionPage({ params }: PageProps) {
 
         setComments(data.comments);
       } catch (err) {
-        console.error('Error fetching comments:', err);
+        logger.error('Error fetching comments:', err);
       }
     };
 
@@ -138,7 +139,7 @@ export default function DefinitionPage({ params }: PageProps) {
         const data = await response.json();
         setGeneratedImages(data.images.reverse().map((img: any) => img.imageUrl));
       } catch (error) {
-        console.error('Erro ao buscar imagens geradas:', error);
+        logger.error('Erro ao buscar imagens geradas:', error);
       } finally {
         setIsLoadingImages(false);
       }
@@ -213,7 +214,7 @@ export default function DefinitionPage({ params }: PageProps) {
 
       setComments(data.comments);
     } catch (err) {
-      console.error('Error fetching comments:', err);
+      logger.error('Error fetching comments:', err);
     }
   };
 

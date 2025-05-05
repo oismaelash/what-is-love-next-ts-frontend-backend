@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { logger } from '../utils/logger';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -38,7 +39,7 @@ export async function moderateContent(content: string): Promise<{
       isApproved: true,
     };
   } catch (error) {
-    console.error('Error moderating content:', error);
+    logger.error('Error moderating content:', error);
     // In case of API error, we'll approve the content to not block legitimate submissions
     return {
       isApproved: false,

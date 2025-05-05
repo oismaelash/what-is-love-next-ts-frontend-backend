@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react';
 import ShareDialog from './ShareDialog';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useRouter, usePathname } from 'next/navigation';
+import { logger } from '@/utils/logger';
 
 interface DefinitionCardProps {
   definition: IDefinition;
@@ -38,12 +39,12 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
 
   // Check if author is an ID (starts with ObjectId format) or a name string
   const isAuthorId = /^[0-9a-fA-F]{24}$/.test(definition.author);
-  console.log('User:', user);
-  console.log('User ID:', user?._id);
-  console.log('User ID string:', user?._id?.toString());
-  console.log('Definition author:', definition.author);
-  console.log('Definition author string:', definition.author.toString());
-  console.log('isAuthorId:', isAuthorId);
+  logger.log('User:', user);
+  logger.log('User ID:', user?._id);
+  logger.log('User ID string:', user?._id?.toString());
+  logger.log('Definition author:', definition.author);
+  logger.log('Definition author string:', definition.author.toString());
+  logger.log('isAuthorId:', isAuthorId);
 
   // For old definitions (with author name), we'll consider the user as author if they're logged in
   // and their name matches the author name
@@ -51,7 +52,7 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
     ? user?._id?.toString() === definition.author.toString()
     : user?.name === definition.author;
 
-  console.log('isAuthor:', isAuthor);
+  logger.log('isAuthor:', isAuthor);
 
   useEffect(() => {
     const fetchAuthorName = async () => {
@@ -63,7 +64,7 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
             setAuthorName(data.user.name);
           }
         } catch (error) {
-          console.error('Error fetching author name:', error);
+          logger.error('Error fetching author name:', error);
         }
       } else {
         setAuthorName(definition.author);
@@ -82,7 +83,7 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
           setHasImages(data.images.length > 0);
         }
       } catch (error) {
-        console.error('Error checking for images:', error);
+        logger.error('Error checking for images:', error);
       }
     };
 
@@ -125,7 +126,7 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
           alert(data.error || 'Erro ao deletar definição');
         }
       } catch (error) {
-        console.error('Error deleting definition:', error);
+        logger.error('Error deleting definition:', error);
         alert('Erro ao deletar definição');
       }
     }

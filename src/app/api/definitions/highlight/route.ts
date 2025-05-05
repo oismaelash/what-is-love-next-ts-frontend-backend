@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import Definition from '@/models/Definition';
+import { logger } from '@/utils/logger';
 
 export async function POST(request: Request) {
   try {
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(updatedDefinition);
   } catch (error) {
-    console.error('Error highlighting definition:', error);
+    logger.error('Error highlighting definition:', error);
     return NextResponse.json(
       { error: 'Erro ao destacar definição' },
       { status: 500 }

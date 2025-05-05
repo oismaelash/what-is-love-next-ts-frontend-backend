@@ -3,11 +3,11 @@ import { headers } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import Definition from '@/models/Definition';
 import { stripe } from '@/lib/stripe';
+import { logger } from '@/utils/logger';
 
 export async function POST(request: Request) {
   try {
     const body = await request.text();
-    // console.log('Body:', body);
     const signature = (await headers()).get('stripe-signature');
 
     if (!signature) {
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         process.env.STRIPE_WEBHOOK_SECRET!
       );
     } catch (err) {
-      console.error('Webhook signature verification failed:', err);
+      logger.error('Webhook signature verification failed:', err);
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 400 }
@@ -33,7 +33,6 @@ export async function POST(request: Request) {
     }
 
     if (event.type === 'checkout.session.completed') {
-      // console.log('Event received:', event.type);
       const session = (event.data.object as unknown) as {
         metadata: {
           definitionId: string;
@@ -88,7 +87,7 @@ export async function POST(request: Request) {
 
       const updatedDefinition = await Definition.findById(definitionId);
 
-      console.log('Updated definition:', updatedDefinition);
+      logger.log('Updated definition:', updatedDefinition);
 
       if (!updatedDefinition) {
         return NextResponse.json(
@@ -102,7 +101,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Error processing webhook:', error);
+    logger.error('Error processing webhook:', error);
     return NextResponse.json(
       { error: 'Erro ao processar webhook' },
       { status: 500 }

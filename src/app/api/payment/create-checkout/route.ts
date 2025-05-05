@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createCheckoutSession, HighlightDuration } from '@/lib/stripe';
 import { createPixCharge } from '@/lib/woovi';
 import { HIGHLIGHT_PRICES, IMAGE_GENERATION_PRICE } from '@/utils/constants';
+import { logger } from '../../../utils/logger';
 
 export async function POST(request: Request) {
   try {
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
       );
     }
   } catch (error) {
-    console.error('Error creating checkout:', error);
+    logger.error('Error creating checkout:', error);
     return NextResponse.json(
       { error: 'Erro ao criar checkout' },
       { status: 500 }

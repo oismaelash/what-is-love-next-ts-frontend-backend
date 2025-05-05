@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import { logger } from '@/utils/logger';
 
 export async function GET(
   _request: NextRequest,
@@ -28,7 +29,7 @@ export async function GET(
 
     return NextResponse.json({ user });
   } catch (error) {
-    console.error('Error fetching user:', error);
+    logger.error('Error fetching user:', error);
     return NextResponse.json(
       { error: 'Erro ao buscar usuário' },
       { status: 500 }

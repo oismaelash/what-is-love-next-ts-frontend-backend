@@ -4,6 +4,7 @@ import GeneratedImage from '@/models/GeneratedImage';
 import Definition from '@/models/Definition';
 import { OpenAI } from 'openai';
 import { uploadToS3 } from '@/lib/s3';
+import { logger } from '@/utils/logger';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
           });
         })
         .catch(async (error) => {
-          console.error('Erro ao fazer upload para S3:', error);
+          logger.error('Erro ao fazer upload para S3:', error);
           await GeneratedImage.findByIdAndUpdate(imageRecord._id, {
             status: 'failed',
             error: error instanceof Error ? error.message : 'Erro ao fazer upload para S3'
@@ -86,7 +87,7 @@ export async function POST(request: Request) {
       throw error;
     }
   } catch (error) {
-    console.error('Erro ao gerar imagem:', error);
+    logger.error('Erro ao gerar imagem:', error);
     return NextResponse.json(
       { error: 'Erro ao gerar imagem' },
       { status: 500 }

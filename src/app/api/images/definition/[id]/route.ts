@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import GeneratedImage from '@/models/GeneratedImage';
+import { logger } from '@/utils/logger';
 
 export async function GET(
     _request: NextRequest,
@@ -25,7 +26,7 @@ export async function GET(
             }))
         });
     } catch (error) {
-        console.error('Erro ao buscar imagens da definição:', error);
+        logger.error('Erro ao buscar imagens da definição:', error);
         return NextResponse.json(
             { error: 'Erro ao buscar imagens da definição' },
             { status: 500 }

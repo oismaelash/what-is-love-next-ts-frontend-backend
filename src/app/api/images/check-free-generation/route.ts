@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import GeneratedImage from '@/models/GeneratedImage';
+import { logger } from '@/utils/logger';
 
 export async function GET() {
   try {
@@ -41,7 +42,7 @@ export async function GET() {
       freeImageCount
     });
   } catch (error) {
-    console.error('Erro ao verificar geração gratuita:', error);
+    logger.error('Erro ao verificar geração gratuita:', error);
     return NextResponse.json(
       { error: 'Erro ao verificar geração gratuita' },
       { status: 500 }

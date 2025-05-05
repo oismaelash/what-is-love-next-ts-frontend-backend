@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { logger } from '../utils/logger';
 
 interface User {
   _id: string;
@@ -26,20 +27,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check if user is logged in
     const checkAuth = async () => {
       try {
-        console.log('Checking auth status...');
+        logger.log('Checking auth status...');
         const response = await fetch('/api/auth/session', {
           credentials: 'include',
         });
         
         if (response.ok) {
           const data = await response.json();
-          console.log('Auth response:', data);
+          logger.log('Auth response:', data);
           setUser(data.user);
         } else {
-          console.log('Auth check failed:', response.status);
+          logger.log('Auth check failed:', response.status);
         }
       } catch (error) {
-        console.error('Error checking auth status:', error);
+        logger.error('Error checking auth status:', error);
       } finally {
         setLoading(false);
       }
@@ -62,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
-    console.log('Login successful:', data);
+    logger.log('Login successful:', data);
     setUser(data.user);
   };
 
@@ -80,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
-    console.log('Registration successful:', data);
+    logger.log('Registration successful:', data);
     setUser(data.user);
   };
 
@@ -94,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error('Erro ao fazer logout');
     }
 
-    console.log('Logout successful');
+    logger.log('Logout successful');
     setUser(null);
   };
 

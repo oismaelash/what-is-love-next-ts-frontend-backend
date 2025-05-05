@@ -7,3 +7,5 @@ export const HIGHLIGHT_PRICES = {
 
 export const IMAGE_GENERATION_PRICE = 100; // R$ 1,00
 
+export const isDev = process.env.NODE_ENV === 'development';
+

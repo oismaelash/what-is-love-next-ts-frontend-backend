@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { moderateContent } from '@/lib/openai';
+import { logger } from '@/utils/logger';
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
       content: content,
     });
   } catch (error) {
-    console.error('Error testing moderation:', error);
+    logger.error('Error testing moderation:', error);
     return NextResponse.json(
       { error: 'Erro ao testar moderação' },
       { status: 500 }

@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Definition from '@/models/Definition';
 import { checkHighlightExpiration } from '@/lib/checkHighlightExpiration';
 import { LeanDefinition } from '@/types/definition';
+import { logger } from '@/utils/logger';
 
 export async function GET(request: Request) {
   try {
@@ -33,7 +34,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ definitions: updatedDefinitions });
   } catch (error) {
-    console.error('Error fetching user definitions:', error);
+    logger.error('Error fetching user definitions:', error);
     return NextResponse.json(
       { error: 'Erro ao buscar definições do usuário' },
       { status: 500 }

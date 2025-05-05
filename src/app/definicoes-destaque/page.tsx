@@ -7,6 +7,7 @@ import { IDefinition } from '@/models/Definition';
 import { useAuth } from '@/context/AuthContext';
 import { useSearchParams } from 'next/navigation';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { logger } from '@/utils/logger';
 
 interface ApiResponse {
   definitions: IDefinition[];
@@ -75,7 +76,7 @@ function HighlightedDefinitionsContent() {
         }
 
         setDefinitions(data.definitions);
-        console.log('Highlighted definitions loaded:', data.definitions.length);
+        logger.log('Highlighted definitions loaded:', data.definitions.length);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -89,7 +90,7 @@ function HighlightedDefinitionsContent() {
   // Load liked definitions
   useEffect(() => {
     const loadLikedDefinitions = async () => {
-      console.log('Loading liked definitions for user:', user?._id);
+      logger.log('Loading liked definitions for user:', user?._id);
 
       if (user) {
         try {
@@ -99,17 +100,17 @@ function HighlightedDefinitionsContent() {
 
           if (response.ok) {
             const data = await response.json();
-            console.log('Liked definitions from DB:', data.likedDefinitions);
+            logger.log('Liked definitions from DB:', data.likedDefinitions);
             setLikedDefinitions(new Set(data.likedDefinitions));
           } else {
-            console.error('Failed to fetch liked definitions:', response.status);
+            logger.error('Failed to fetch liked definitions:', response.status);
           }
         } catch (error) {
-          console.error('Error fetching liked definitions:', error);
+          logger.error('Error fetching liked definitions:', error);
         }
       } else {
         const storedLikes = localStorage.getItem('likedDefinitions');
-        console.log('Liked definitions from localStorage:', storedLikes);
+        logger.log('Liked definitions from localStorage:', storedLikes);
         if (storedLikes) {
           setLikedDefinitions(new Set(JSON.parse(storedLikes)));
         }
@@ -145,7 +146,7 @@ function HighlightedDefinitionsContent() {
       }
 
       const updatedDefinition = await response.json();
-      console.log('Definition liked:', updatedDefinition._id);
+      logger.log('Definition liked:', updatedDefinition._id);
 
       // Update the definition in the list
       setDefinitions(definitions.map(def =>
@@ -155,7 +156,7 @@ function HighlightedDefinitionsContent() {
       // Add to liked definitions
       const newLikedDefinitions = new Set(likedDefinitions).add(definitionId);
       setLikedDefinitions(newLikedDefinitions);
-      console.log('Updated liked definitions:', Array.from(newLikedDefinitions));
+      logger.log('Updated liked definitions:', Array.from(newLikedDefinitions));
 
       // For non-logged-in users, save to localStorage
       if (!user) {
@@ -168,7 +169,7 @@ function HighlightedDefinitionsContent() {
         severity: 'success'
       });
     } catch (err) {
-      console.error('Error liking definition:', err);
+      logger.error('Error liking definition:', err);
       setSnackbar({
         open: true,
         message: 'Erro ao curtir definição',

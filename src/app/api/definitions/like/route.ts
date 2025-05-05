@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import Definition from '@/models/Definition';
 import User from '@/models/User';
+import { logger } from '@/utils/logger';
 
 export async function POST(request: Request) {
   try {
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
     const session = cookieStore.get('session')?.value;
     const userId = session;
 
-    console.log('Like request - User ID:', userId, 'Definition ID:', definitionId);
+    logger.log('Like request - User ID:', userId, 'Definition ID:', definitionId);
 
     // Increment the likes count for the definition
     const definition = await Definition.findByIdAndUpdate(
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
 
     // If user is logged in, add the definition to their likedDefinitions
     if (userId) {
-      console.log('Updating user liked definitions...');
+      logger.log('Updating user liked definitions...');
       
       // First update the user
       await User.updateOne(
@@ -53,19 +54,19 @@ export async function POST(request: Request) {
       const updatedUser = await User.findById(userId).select('likedDefinitions');
       
       if (!updatedUser) {
-        console.error('User not found for update:', userId);
+        logger.log('User not found for update:', userId);
         return NextResponse.json(
           { error: 'Usuário não encontrado' },
           { status: 404 }
         );
       }
 
-      console.log('Updated user liked definitions:', updatedUser.likedDefinitions);
+      logger.log('Updated user liked definitions:', updatedUser.likedDefinitions);
     }
 
     return NextResponse.json(definition);
   } catch (error) {
-    console.error('Error liking definition:', error);
+    logger.error('Error liking definition:', error);
     return NextResponse.json(
       { error: 'Erro ao curtir definição' },
       { status: 500 }

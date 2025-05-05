@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { CreditCard, QrCode } from '@mui/icons-material';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useRouter } from 'next/navigation';
+import { logger } from '../utils/logger';
 
 interface GenerateImageButtonProps {
     definitionId: string;
@@ -46,7 +47,7 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                     const data = await response.json();
                     setCanGenerateFree(data.canGenerateFree);
                 } catch (error) {
-                    console.error('Error checking free generation:', error);
+                    logger.error('Error checking free generation:', error);
                     setCanGenerateFree(false);
                 }
             } else {
@@ -165,13 +166,13 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
         try {
             setIsCheckingPayment(true);
             setLoading(true);
-            console.log('Checking PIX payment status for correlationID:', pixData.correlationID);
+            logger.log('Checking PIX payment status for correlationID:', pixData.correlationID);
             const response = await fetch(`/api/payment/check-pix-status?correlationID=${pixData.correlationID}`);
             const data = await response.json();
-            console.log('PIX payment status response:', data);
+            logger.log('PIX payment status response:', data);
 
             if (data.paid) {
-                console.log('PIX payment confirmed, generating image...');
+                logger.log('PIX payment confirmed, generating image...');
                 trackEvent('SUCCESS', 'PAYMENT', `PIX payment successful for image generation ${definitionId}`);
                 setOpen(false);
                 setPixData(null);
@@ -188,7 +189,7 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                 });
 
                 const imageData = await imageResponse.json();
-                console.log('Image generation response:', imageData);
+                logger.log('Image generation response:', imageData);
 
                 if (!imageResponse.ok) {
                     throw new Error(imageData.error || 'Erro ao gerar imagem');
@@ -201,7 +202,7 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                     severity: 'success'
                 });
             } else {
-                console.log('PIX payment not confirmed yet');
+                logger.log('PIX payment not confirmed yet');
                 setSnackbar({
                     open: true,
                     message: 'Pagamento ainda não confirmado. Tente novamente em alguns instantes.',
@@ -209,7 +210,7 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                 });
             }
         } catch (_err) {
-            console.error('Error in PIX payment flow:', _err);
+            logger.error('Error in PIX payment flow:', _err);
             setSnackbar({
                 open: true,
                 message: 'Erro ao verificar status do pagamento',

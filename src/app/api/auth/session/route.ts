@@ -2,41 +2,39 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import { logger } from '@/utils/logger';
 
 export async function GET() {
   try {
     const cookieStore = await cookies();
-    const session = cookieStore.get('session');
-    
-    console.log('Session cookie:', session);
+    const session = cookieStore.get('session')?.value;
 
     if (!session) {
-      console.log('No session found');
-      return NextResponse.json({ user: null }, { status: 200 });
+      logger.log('No session found');
+      return NextResponse.json(
+        { error: 'Usuário não autenticado' },
+        { status: 401 }
+      );
     }
+
+    logger.log('Fetching user session:', session);
 
     await connectDB();
 
-    const user = await User.findById(session.value);
-    console.log('User found:', user ? user._id : null);
-
+    const user = await User.findById(session).select('name email');
     if (!user) {
-      console.log('No user found for session');
-      return NextResponse.json({ user: null }, { status: 200 });
+      logger.log('User not found:', session);
+      return NextResponse.json(
+        { error: 'Usuário não encontrado' },
+        { status: 404 }
+      );
     }
 
-    // Remove password from response
-    // eslint-disable-next-line
-    const { password: _password, ...userWithoutPassword } = user.toObject();
-
-    return NextResponse.json(
-      { user: userWithoutPassword },
-      { status: 200 }
-    );
+    return NextResponse.json({ user });
   } catch (error) {
-    console.error('Error in session route:', error);
+    logger.error('Error fetching session:', error);
     return NextResponse.json(
-      { message: 'Erro ao verificar sessão' },
+      { error: 'Erro ao buscar sessão' },
       { status: 500 }
     );
   }
