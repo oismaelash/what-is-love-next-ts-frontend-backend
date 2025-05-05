@@ -50,7 +50,22 @@ export async function POST(request: Request) {
     await connectDB();
 
     if (isImageGeneration === 'true') {
-      // For image generation, we don't need to update the definition
+      // Call the image generation endpoint
+      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/images/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          definitionId,
+          isFree: false
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate image');
+      }
+
       return NextResponse.json({ success: true });
     }
 

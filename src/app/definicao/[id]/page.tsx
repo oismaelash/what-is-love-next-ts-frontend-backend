@@ -147,6 +147,60 @@ export default function DefinitionPage({ params }: PageProps) {
     fetchGeneratedImages();
   }, [definition]);
 
+  useEffect(() => {
+    const handlePaymentSuccess = async () => {
+      if (!searchParams) return;
+      
+      const payment = searchParams.get('payment');
+      const type = searchParams.get('type');
+      
+      if (payment === 'success' && type === 'image' && definition) {
+        try {
+          setIsGeneratingImage(true);
+          setSnackbar({
+            open: true,
+            message: 'Gerando imagem...',
+            severity: 'info'
+          });
+
+          const response = await fetch('/api/images/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              definitionId: definition._id,
+              isFree: false
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Erro ao gerar imagem');
+          }
+
+          setGeneratedImages(prev => [data.imageUrl, ...prev]);
+          setSnackbar({
+            open: true,
+            message: 'Imagem gerada com sucesso!',
+            severity: 'success'
+          });
+        } catch (err) {
+          setSnackbar({
+            open: true,
+            message: err instanceof Error ? err.message : 'Erro ao gerar imagem',
+            severity: 'error'
+          });
+        } finally {
+          setIsGeneratingImage(false);
+        }
+      }
+    };
+
+    handlePaymentSuccess();
+  }, [searchParams, definition]);
+
   const handleCommentAdded = async () => {
     try {
       const id = (await params).id;

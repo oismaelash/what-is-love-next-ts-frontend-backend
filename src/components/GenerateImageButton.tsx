@@ -164,15 +164,44 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
         
         try {
             setIsCheckingPayment(true);
+            setLoading(true);
+            console.log('Checking PIX payment status for correlationID:', pixData.correlationID);
             const response = await fetch(`/api/payment/check-pix-status?correlationID=${pixData.correlationID}`);
             const data = await response.json();
+            console.log('PIX payment status response:', data);
 
             if (data.paid) {
+                console.log('PIX payment confirmed, generating image...');
                 trackEvent('SUCCESS', 'PAYMENT', `PIX payment successful for image generation ${definitionId}`);
                 setOpen(false);
                 setPixData(null);
-                generateImage(false);
+                
+                const imageResponse = await fetch('/api/images/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        definitionId,
+                        isFree: false
+                    }),
+                });
+
+                const imageData = await imageResponse.json();
+                console.log('Image generation response:', imageData);
+
+                if (!imageResponse.ok) {
+                    throw new Error(imageData.error || 'Erro ao gerar imagem');
+                }
+
+                onImageGenerated(imageData.imageUrl);
+                setSnackbar({
+                    open: true,
+                    message: 'Imagem gerada com sucesso!',
+                    severity: 'success'
+                });
             } else {
+                console.log('PIX payment not confirmed yet');
                 setSnackbar({
                     open: true,
                     message: 'Pagamento ainda não confirmado. Tente novamente em alguns instantes.',
@@ -180,15 +209,16 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                 });
             }
         } catch (_err) {
+            console.error('Error in PIX payment flow:', _err);
             setSnackbar({
                 open: true,
                 message: 'Erro ao verificar status do pagamento',
                 severity: 'error'
             });
             trackEvent('ERROR', 'PAYMENT', `Error checking PIX payment status for image generation ${definitionId}`);
-            console.error('Erro ao verificar status do pagamento:', _err);
         } finally {
             setIsCheckingPayment(false);
+            setLoading(false);
         }
     };
 

@@ -12,6 +12,8 @@ export async function GET(request: Request) {
       );
     }
 
+    console.log('Checking PIX status for correlationID:', correlationID);
+
     const response = await fetch(
       `https://api.openpix.com.br/api/v1/charge/${correlationID}`,
       {
@@ -27,9 +29,13 @@ export async function GET(request: Request) {
     }
 
     const data = await response.json();
+    console.log('PIX status response:', data);
+    
+    const isPaid = data.charge.status === 'COMPLETED';
+    console.log('Is paid?', isPaid);
     
     return NextResponse.json({
-      paid: data.charge.status === 'COMPLETED',
+      paid: isPaid,
     });
   } catch (error) {
     console.error('Error checking PIX status:', error);
