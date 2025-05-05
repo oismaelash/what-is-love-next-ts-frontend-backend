@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createCheckoutSession, HighlightDuration } from '@/lib/stripe';
 import { createPixCharge } from '@/lib/woovi';
 import { HIGHLIGHT_PRICES, IMAGE_GENERATION_PRICE } from '@/utils/constants';
-import { logger } from '../../../utils/logger';
+import { logger } from '@/utils/logger';
 
 export async function POST(request: Request) {
   try {

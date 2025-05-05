@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import { createPixCharge, HighlightDuration } from '@/lib/woovi';
-import { logger } from '../../../utils/logger';
+import { logger } from '@/utils/logger';
 
 export async function POST(request: Request) {
   try {
