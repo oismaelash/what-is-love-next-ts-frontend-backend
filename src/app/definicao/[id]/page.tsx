@@ -1,15 +1,34 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Container, Typography, Box, CircularProgress, Snackbar, Alert, Grid, Card, CardMedia, IconButton, CardActions, Paper } from '@mui/material';
+import { 
+  Container, 
+  Typography, 
+  Box, 
+  CircularProgress, 
+  Snackbar, 
+  Alert, 
+  Grid, 
+  Card, 
+  CardMedia, 
+  IconButton, 
+  CardActions, 
+  Paper, 
+  Divider,
+  Tabs,
+  Tab
+} from '@mui/material';
 import DefinitionCard from '@/components/DefinitionCard';
 import { IDefinition } from '@/models/Definition';
+import { IComment } from '@/models/Comment';
 import { useAuth } from '@/context/AuthContext';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import GenerateImageButton from '@/components/GenerateImageButton';
 import { useSearchParams } from 'next/navigation';
 import DownloadIcon from '@mui/icons-material/Download';
-import { AutoAwesome } from '@mui/icons-material';
+import { AutoAwesome, Image as ImageIcon, Comment as CommentIcon } from '@mui/icons-material';
+import Comment from '@/components/Comment';
+import CommentForm from '@/components/CommentForm';
 
 interface PageProps {
   params: Promise<{
@@ -17,191 +36,135 @@ interface PageProps {
   }>
 }
 
-export default function DefinitionPage(props: PageProps) {
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
   return (
-    <Suspense fallback={
-      <Container maxWidth="md" sx={{ mt: 4, minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <CircularProgress />
-      </Container>
-    }>
-      <DefinitionContent {...props} />
-    </Suspense>
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
   );
 }
 
-function DefinitionContent(props: PageProps) {
+export default function DefinitionPage({ params }: PageProps) {
   const [definition, setDefinition] = useState<IDefinition | null>(null);
-  const [pageLoading, setPageLoading] = useState(true);
+  const [comments, setComments] = useState<IComment[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [likedDefinitions, setLikedDefinitions] = useState<Set<string>>(new Set());
+  const { user } = useAuth();
+  const { trackEvent } = useAnalytics();
+  const searchParams = useSearchParams();
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
     open: false,
     message: '',
     severity: 'success'
   });
-  const { user } = useAuth();
-  const { trackEvent } = useAnalytics();
+  const [tabValue, setTabValue] = useState(0);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
-  const [_, setHasGeneratedFree] = useState<boolean | null>(null);
-  const [isGeneratingFromPayment, setIsGeneratingFromPayment] = useState(false);
-  const [paymentProcessed, setPaymentProcessed] = useState(false);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
-  const searchParams = useSearchParams();
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
-  // Check for payment return status
-  useEffect(() => {
-    if (!searchParams || !definition || isGeneratingFromPayment || paymentProcessed) return;
-    
-    const paymentStatus = searchParams.get('payment');
-    const paymentType = searchParams.get('type');
-
-    if (paymentStatus === 'success' && paymentType === 'image') {
-      setPaymentProcessed(true);
-      setSnackbar({
-        open: true,
-        message: 'Pagamento realizado com sucesso! Gerando sua imagem...',
-        severity: 'success'
-      });
-      // Generate the image
-      setIsGeneratingFromPayment(true);
-      generateImage(false);
-      trackEvent('SUCCESS', 'PAYMENT', 'Stripe payment successful for image generation');
-    } else if (paymentStatus === 'cancelled' && paymentType === 'image') {
-      setPaymentProcessed(true);
-      setSnackbar({
-        open: true,
-        message: 'Pagamento cancelado. Você pode tentar novamente quando quiser.',
-        severity: 'info'
-      });
-      trackEvent('ERROR', 'PAYMENT', 'Stripe payment cancelled by user for image generation');
-    }
-  }, [searchParams, definition, isGeneratingFromPayment, paymentProcessed]);
-
-  // Fetch definition
   useEffect(() => {
     const fetchDefinition = async () => {
-      const { id } = await props.params;
-
       try {
-        setPageLoading(true);
-        setError(null);
-
+        const id = (await params).id;
         const response = await fetch(`/api/definitions/${id}`);
+        const data = await response.json();
+
         if (!response.ok) {
-          throw new Error('Failed to fetch definition');
+          throw new Error(data.error || 'Erro ao carregar definição');
         }
 
-        const data = await response.json();
         setDefinition(data);
-        trackEvent('VIEW', 'DEFINITION', `Viewed definition ${id}`);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-        trackEvent('VIEW', 'DEFINITION', `Failed to view definition ${id}`, 0);
+        setError(err instanceof Error ? err.message : 'Erro ao carregar definição');
+        setSnackbar({
+          open: true,
+          message: err instanceof Error ? err.message : 'Erro ao carregar definição',
+          severity: 'error'
+        });
       } finally {
-        setPageLoading(false);
+        setLoading(false);
       }
     };
 
     fetchDefinition();
-  }, [props.params]);
+  }, [params]);
 
-  // Load liked definitions
   useEffect(() => {
-    const loadLikedDefinitions = async () => {
-      if (user) {
-        try {
-          const response = await fetch('/api/user/liked-definitions', {
-            credentials: 'include',
-          });
+    const fetchComments = async () => {
+      if (!definition) return;
+      
+      try {
+        const response = await fetch(`/api/comments?definitionId=${definition._id}`);
+        const data = await response.json();
 
-          if (response.ok) {
-            const data = await response.json();
-            setLikedDefinitions(new Set(data.likedDefinitions));
-          }
-        } catch (error) {
-          console.error('Error fetching liked definitions:', error);
+        if (!response.ok) {
+          throw new Error(data.error || 'Erro ao carregar comentários');
         }
-      } else {
-        const storedLikes = localStorage.getItem('likedDefinitions');
-        if (storedLikes) {
-          setLikedDefinitions(new Set(JSON.parse(storedLikes)));
-        }
+
+        setComments(data.comments);
+      } catch (err) {
+        console.error('Error fetching comments:', err);
       }
     };
 
-    loadLikedDefinitions();
-  }, [user]);
+    fetchComments();
+  }, [definition]);
 
-  // Fetch generated images
   useEffect(() => {
     const fetchGeneratedImages = async () => {
-      if (definition) {
-        try {
-          setIsLoadingImages(true);
-          const response = await fetch(`/api/images/definition/${definition._id}`);
-          const data = await response.json();
-          setGeneratedImages(data.images.reverse().map((img: any) => img.imageUrl));
-        } catch (error) {
-          console.error('Erro ao buscar imagens geradas:', error);
-        } finally {
-          setIsLoadingImages(false);
-        }
+      if (!definition) return;
+
+      try {
+        setIsLoadingImages(true);
+        const response = await fetch(`/api/images/definition/${definition._id}`);
+        const data = await response.json();
+        setGeneratedImages(data.images.reverse().map((img: any) => img.imageUrl));
+      } catch (error) {
+        console.error('Erro ao buscar imagens geradas:', error);
+      } finally {
+        setIsLoadingImages(false);
       }
     };
 
     fetchGeneratedImages();
   }, [definition]);
 
-  const handleLike = async (definitionId: string) => {
+  const handleCommentAdded = async () => {
     try {
-      // Check if already liked
-      if (likedDefinitions.has(definitionId)) {
-        setSnackbar({
-          open: true,
-          message: 'Você já curtiu esta definição',
-          severity: 'info'
-        });
-        trackEvent('FAVORITE', 'DEFINITION', `Already liked definition ${definitionId}`);
-        return;
+      const id = (await params).id;
+      const response = await fetch(`/api/comments?definitionId=${id}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao carregar comentários');
       }
 
-      const response = await fetch('/api/definitions/like', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ definitionId }),
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        setLikedDefinitions(prev => new Set([...prev, definitionId]));
-        trackEvent('FAVORITE', 'DEFINITION', `Liked definition ${definitionId}`);
-        setSnackbar({
-          open: true,
-          message: 'Definição curtida com sucesso!',
-          severity: 'success'
-        });
-      } else {
-        throw new Error('Failed to like definition');
-      }
+      setComments(data.comments);
     } catch (err) {
-      trackEvent('FAVORITE', 'DEFINITION', `Failed to like definition ${definitionId}`, 0);
-      setSnackbar({
-        open: true,
-        message: err instanceof Error ? err.message : 'Erro ao curtir a definição',
-        severity: 'error'
-      });
+      console.error('Error fetching comments:', err);
     }
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
-  };
-
-  const handleImageGenerated = (imageUrl: string) => {
-    setGeneratedImages(prev => [imageUrl, ...prev]);
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
   };
 
   const generateImage = async (isFree: boolean) => {
@@ -230,14 +193,12 @@ function DefinitionContent(props: PageProps) {
         throw new Error(data.error || 'Erro ao gerar imagem');
       }
 
-      handleImageGenerated(data.imageUrl);
+      setGeneratedImages(prev => [data.imageUrl, ...prev]);
       setSnackbar({
         open: true,
         message: 'Imagem gerada com sucesso!',
         severity: 'success'
       });
-
-      setHasGeneratedFree(false);
     } catch (err) {
       setSnackbar({
         open: true,
@@ -246,34 +207,25 @@ function DefinitionContent(props: PageProps) {
       });
     } finally {
       setIsGeneratingImage(false);
-      setIsGeneratingFromPayment(false);
     }
   };
 
-  if (pageLoading) {
+  if (loading) {
     return (
-      <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-        <CircularProgress />
+      <Container>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+          <CircularProgress />
+        </Box>
       </Container>
     );
   }
 
-  if (error) {
+  if (error || !definition) {
     return (
       <Container>
-        <Typography color="error" align="center">
-          {error}
-        </Typography>
-      </Container>
-    );
-  }
-
-  if (!definition) {
-    return (
-      <Container>
-        <Typography align="center">
-          Definição não encontrada
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+          <Typography color="error">{error || 'Definição não encontrada'}</Typography>
+        </Box>
       </Container>
     );
   }
@@ -290,12 +242,8 @@ function DefinitionContent(props: PageProps) {
           </Typography>
         </Box>
 
-        <DefinitionCard
-          definition={definition}
-          onLike={() => handleLike(definition._id.toString())}
-          isLiked={likedDefinitions.has(definition._id.toString())}
-        />
-
+        <DefinitionCard definition={definition} />
+        
         <Paper 
           elevation={0} 
           sx={{ 
@@ -323,66 +271,87 @@ function DefinitionContent(props: PageProps) {
 
         <GenerateImageButton
           definitionId={definition._id.toString()}
-          onImageGenerated={handleImageGenerated}
+          onImageGenerated={(imageUrl) => setGeneratedImages(prev => [imageUrl, ...prev])}
           isLoading={isGeneratingImage}
         />
 
-        {isLoadingImages ? (
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
-            <CircularProgress />
+        <Box sx={{ width: '100%', mt: 4 }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <Tabs value={tabValue} onChange={handleTabChange} aria-label="basic tabs example">
+              <Tab icon={<ImageIcon />} label="Imagens Geradas" />
+              <Tab icon={<CommentIcon />} label="Comentários" />
+            </Tabs>
           </Box>
-        ) : generatedImages.length > 0 && (
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h5" gutterBottom>
-              Imagens Geradas
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
-              {generatedImages.map((imageUrl, index) => (
-                <Box key={index}>
-                  <Card>
-                    <CardMedia
-                      component="img"
-                      image={imageUrl}
-                      alt={`Imagem gerada ${index + 1}`}
-                      sx={{ height: 200, objectFit: 'cover' }}
-                    />
-                    <CardActions sx={{ justifyContent: 'center' }}>
-                      <IconButton 
-                        onClick={() => {
-                          const link = document.createElement('a');
-                          link.href = imageUrl;
-                          link.download = `imagem-amor-${index + 1}.jpg`;
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }}
-                        color="primary"
-                        aria-label="download image"
-                      >
-                        <DownloadIcon />
-                      </IconButton>
-                    </CardActions>
-                  </Card>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        )}
-
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert
-            onClose={handleCloseSnackbar}
-            severity={snackbar.severity}
-          >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
+          <TabPanel value={tabValue} index={0}>
+            {isLoadingImages ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                <CircularProgress />
+              </Box>
+            ) : generatedImages.length > 0 ? (
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
+                {generatedImages.map((imageUrl, index) => (
+                  <Box key={index}>
+                    <Card>
+                      <CardMedia
+                        component="img"
+                        image={imageUrl}
+                        alt={`Imagem gerada ${index + 1}`}
+                        sx={{ height: 200, objectFit: 'cover' }}
+                      />
+                      <CardActions sx={{ justifyContent: 'center' }}>
+                        <IconButton 
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = imageUrl;
+                            link.download = `imagem-amor-${index + 1}.jpg`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }}
+                          color="primary"
+                          aria-label="download image"
+                        >
+                          <DownloadIcon />
+                        </IconButton>
+                      </CardActions>
+                    </Card>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" align="center">
+                Nenhuma imagem gerada ainda. Seja o primeiro a gerar uma imagem para esta definição!
+              </Typography>
+            )}
+          </TabPanel>
+          <TabPanel value={tabValue} index={1}>
+            <CommentForm definitionId={definition._id.toString()} onCommentAdded={handleCommentAdded} />
+            <Divider sx={{ my: 2 }} />
+            {comments.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                Nenhum comentário ainda. Seja o primeiro a comentar!
+              </Typography>
+            ) : (
+              comments.map((comment) => (
+                <Comment key={comment._id.toString()} comment={comment} />
+              ))
+            )}
+          </TabPanel>
+        </Box>
       </Container>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+      >
+        <Alert
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 } 
