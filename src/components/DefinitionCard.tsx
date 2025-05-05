@@ -134,7 +134,7 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
   return (
     <>
       <Card
-        onClick={() => {
+        onClick={(e) => {
           if (!isDefinitionDetailPage) {
             router.push(`/definicao/${definition._id}`);
             trackEvent('CLICK', 'DEFINITION', `Viewed definition ${definition._id}`);
@@ -177,7 +177,7 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Stack direction="row" spacing={1} alignItems="center">
-              <IconButton onClick={handleLike} size="small">
+              <IconButton onClick={(e) => { e.stopPropagation(); handleLike(); }} size="small">
                 {isLiked ? <Favorite color="error" /> : <FavoriteBorder />}
               </IconButton>
               <Typography variant="caption" color="text.secondary">
@@ -188,14 +188,16 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
               <Typography variant="caption" color="text.secondary">
                 {definition.shares} compartilhamentos
               </Typography>
-              <IconButton onClick={handleShare} size="small">
+              <IconButton onClick={(e) => { e.stopPropagation(); handleShare(); }} size="small">
                 <Share />
               </IconButton>
-              <FavoriteButton
-                definitionId={definition._id.toString()}
-                onFavorite={() => trackEvent('FAVORITE', 'DEFINITION', `Added to favorites ${definition._id}`)}
-                onUnfavorite={() => trackEvent('FAVORITE', 'DEFINITION', `Removed from favorites ${definition._id}`)}
-              />
+              <Box onClick={(e) => e.stopPropagation()}>
+                <FavoriteButton
+                  definitionId={definition._id.toString()}
+                  onFavorite={() => trackEvent('FAVORITE', 'DEFINITION', `Added to favorites ${definition._id}`)}
+                  onUnfavorite={() => trackEvent('FAVORITE', 'DEFINITION', `Removed from favorites ${definition._id}`)}
+                />
+              </Box>
             </Stack>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 1, gap: 1 }}>
@@ -208,12 +210,14 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
                 />
               </>
             )}
-            <CopyButton content={definition.content} />
+            <Box onClick={(e) => e.stopPropagation()}>
+              <CopyButton content={definition.content} />
+            </Box>
             {hasImages && !isDefinitionDetailPage && (
               <Button
                 variant="outlined"
                 startIcon={<Image />}
-                onClick={handleViewImages}
+                onClick={(e) => { e.stopPropagation(); handleViewImages(); }}
                 size="small"
               >
                 Ver Imagens
