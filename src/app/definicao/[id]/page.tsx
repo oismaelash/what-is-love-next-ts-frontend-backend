@@ -30,6 +30,7 @@ import { AutoAwesome, Image as ImageIcon, Comment as CommentIcon } from '@mui/ic
 import Comment from '@/components/Comment';
 import CommentForm from '@/components/CommentForm';
 import { logger } from '@/utils/logger';
+import { EventActions, EventCategories } from '@/utils/analytics';
 
 interface PageProps {
   params: Promise<{
@@ -68,7 +69,7 @@ export default function DefinitionPage({ params }: PageProps) {
   const [comments, setComments] = useState<IComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+
   const { trackEvent } = useAnalytics();
   const searchParams = useSearchParams();
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
@@ -187,12 +188,14 @@ export default function DefinitionPage({ params }: PageProps) {
             message: 'Imagem gerada com sucesso!',
             severity: 'success'
           });
+          trackEvent('SUCCESS', 'DEFINITION', 'Image generated');
         } catch (err) {
           setSnackbar({
             open: true,
             message: err instanceof Error ? err.message : 'Erro ao gerar imagem',
             severity: 'error'
           });
+          trackEvent('ERROR', 'DEFINITION', 'Image generation failed');
         } finally {
           setIsGeneratingImage(false);
         }
@@ -213,6 +216,7 @@ export default function DefinitionPage({ params }: PageProps) {
       }
 
       setComments(data.comments);
+      trackEvent('CREATE', 'DEFINITION', 'Comment added');
     } catch (err) {
       logger.error('Error fetching comments:', err);
     }
@@ -220,49 +224,7 @@ export default function DefinitionPage({ params }: PageProps) {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
-  };
-
-  const generateImage = async (isFree: boolean) => {
-    try {
-      setIsGeneratingImage(true);
-      setSnackbar({
-        open: true,
-        message: 'Gerando imagem...',
-        severity: 'info'
-      });
-
-      const response = await fetch('/api/images/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          definitionId: definition?._id,
-          isFree
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao gerar imagem');
-      }
-
-      setGeneratedImages(prev => [data.imageUrl, ...prev]);
-      setSnackbar({
-        open: true,
-        message: 'Imagem gerada com sucesso!',
-        severity: 'success'
-      });
-    } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err instanceof Error ? err.message : 'Erro ao gerar imagem',
-        severity: 'error'
-      });
-    } finally {
-      setIsGeneratingImage(false);
-    }
+    trackEvent('NAVIGATE', 'NAVIGATION', `Tab changed to ${newValue === 0 ? 'images' : 'comments'}`);
   };
 
   if (loading) {

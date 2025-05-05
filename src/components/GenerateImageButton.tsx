@@ -3,7 +3,6 @@ import { Button, CircularProgress, Box, Snackbar, Alert, Dialog, DialogTitle, Di
 import { useAuth } from '@/context/AuthContext';
 import { CreditCard, QrCode } from '@mui/icons-material';
 import { useAnalytics } from '@/hooks/useAnalytics';
-import { useRouter } from 'next/navigation';
 import { logger } from '../utils/logger';
 
 interface GenerateImageButtonProps {
@@ -37,7 +36,6 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
     const [canGenerateFree, setCanGenerateFree] = useState<boolean | null>(null);
     const { user } = useAuth();
     const { trackEvent } = useAnalytics();
-    const router = useRouter();
 
     useEffect(() => {
         const checkFreeGeneration = async () => {
@@ -176,6 +174,12 @@ export default function GenerateImageButton({ definitionId, onImageGenerated, is
                 trackEvent('SUCCESS', 'PAYMENT', `PIX payment successful for image generation ${definitionId}`);
                 setOpen(false);
                 setPixData(null);
+
+                setSnackbar({
+                    open: true,
+                    message: 'Pagamento confirmado, gerando imagem...',
+                    severity: 'info'
+                });
                 
                 const imageResponse = await fetch('/api/images/generate', {
                     method: 'POST',

@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       // Gera a imagem usando OpenAI
       const response = await openai.images.generate({
         model: "dall-e-3",
-        prompt: `Crie uma imagem abstrata que represente o amor, baseada nesta definição: "${definition.content}"`,
+        prompt: `Crie uma imagem abstrata sem texto que represente o amor, baseada nesta definição: "${definition.content}"`,
         n: 1,
         size: "1024x1024",
       });
