@@ -201,7 +201,9 @@ export default function DefinitionCard({ definition, onLike, isLiked, onDelete }
             </Stack>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 1, gap: 1 }}>
-            <HighlightButton onClick={(e) => e.stopPropagation()} definitionId={definition._id.toString()} isAuthor={isAuthor} />
+            <Box onClick={(e) => e.stopPropagation()}>
+              <HighlightButton definitionId={definition._id.toString()} isAuthor={isAuthor} />
+            </Box>
             {isAuthor && (
               <DeleteButton
                 definitionId={definition._id.toString()}
